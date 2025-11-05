@@ -11,7 +11,29 @@ export async function fetchParcels() {
     const token = Cookies.get('jwt');
     if (!token) throw new Error('Not authenticated');
 
-    const res = await fetch(`${BASE}/v1/FarmParcels/`, {
+    const res = await fetch(`${BASE}/v1/FarmParcels/?parcel_type=FIELD`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+        // credentials: 'include' // only if you truly need cookies sent to another origin
+    });
+
+    if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        throw new Error(`Failed to fetch farm plots (${res.status}) ${msg}`);
+    }
+
+    return res.json();
+}
+
+export async function fetchParcelsUser() {
+    const token = Cookies.get('jwt');
+    if (!token) throw new Error('Not authenticated');
+
+    const res = await fetch(`${BASE}/v1/FarmParcels/?parcel_type=FIELD`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',

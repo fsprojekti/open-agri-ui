@@ -112,23 +112,23 @@ export async function addBeehive(input) {
     // Build description from notes (+ frames if provided)
     const description = apiaryUuid;
 
-    // Construct FarmAnimal payload (per schema)
-    const payload = {
-        // required
-        species,                // string
-        birthdate,              // ISO datetime
-        hasAgriParcel: apiaryUuid, // UUID of the apiary FarmParcel
-
-        // optional/common
-        nationalID: code,       // use beehive code as a stable identifier
-        name: code,             // human label
-        description,            // composed text
-
-        breed: model || null,   // store beehive "model" here
-        sex: input?.sex,        // optional enum (leave undefined if unknown)
-        isCastrated: !!input?.isCastrated, // defaults to false if not provided
-        status: Number.isFinite(+input?.status) ? +input.status : 1, // default active
-    };
+    // // Construct FarmAnimal payload (per schema)
+    // const payload = {
+    //     // required
+    //     species,                // string
+    //     birthdate,              // ISO datetime
+    //     hasAgriParcel: apiaryUuid, // UUID of the apiary FarmParcel
+    //
+    //     // optional/common
+    //     nationalID: code,       // use beehive code as a stable identifier
+    //     name: code,             // human label
+    //     description,            // composed text
+    //
+    //     breed: model || null,   // store beehive "model" here
+    //     sex: input?.sex,        // optional enum (leave undefined if unknown)
+    //     isCastrated: !!input?.isCastrated, // defaults to false if not provided
+    //     status: Number.isFinite(+input?.status) ? +input.status : 1, // default active
+    // };
 
     const payload = {
         status: 1,
