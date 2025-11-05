@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "appName": "OpenAgri",
+    "dashboard": "Nadzorna plošča",
+    "profile": "Profil",
+    "settings": "Nastavitve",
+    "logout": "Odjava"
+  },
+  "sidebar": {
+    "overview": "Pregled",
+    "users": "Uporabniki",
+    "reports": "Poročila"
+  },
+  "dashboard": {
+    "plot": "Polja",
+    "crops": "Poljščine",
+    "pestControl": "Nadzor škodljivcev"
+  },
+  "home": {
+    "login": "Prijava",
+    "register": "Registracija"
+  },
+  "login": {
+    "title": "Prosimo, prijavite se",
+    "username": "Uporabniško ime",
+    "usernamePlaceholder": "Vnesite uporabniško ime",
+    "password": "Geslo",
+    "passwordPlaceholder": "Vnesite geslo",
+    "submit": "Prijava"
+  },
+  "register": {
+    "title": "Registracija",
+    "username": "Uporabniško ime",
+    "email": "Elektronski naslov",
+    "password": "Geslo",
+    "accessCode": "Dostopna koda",
+    "submit": "Registracija",
+    "invalidAccessCode": "Neveljavna dostopna koda"
+  },
+  "plot": {
+    "add": "Dodaj parcelo",
+    "search": "Poišči parcelo",
+    "longitude": "Zemljepisna dolžina",
+    "latitude": "Zemljepisna širina",
+    "logitudePlaceholder": "Zemljepisno dolžino izberi na karti",
+    "latitudePlaceholder": "Zemljepisno širino izberi na karti",
+    "size": "Velikost",
+    "size.placeholder": "Vnesi velikost v hektarjih",
+    "tapMap": "Dotaknite se karte, da izberete lokacijo parcele",
+    "size.title": "Nastavite velikost vaše parcele v hektarjih (ha)",
+    "size.help": "Uporabite gumbe za izbiro velikosti v hektarjih ali vnesite vrednost ročno"
+  },
+  "farm": {
+    "add": "Dodaj novo kmetijo",
+    "search": "Poišči kmetijo",
+    "name": "Ime kmetije",
+    "namePlaceholder": "Vnesi ime kmetije",
+    "location": "Lokacija",
+    "locationPlaceholder": "Vnesi lokacijo kmetije"
+  },
+  "button": {
+    "save": "Shrani",
+    "cancel": "Prekliči",
+    "delete": "Izbriši",
+    "edit": "Uredi",
+    "update": "Posodobi",
+    "next": "Naprej"
+  }
+}

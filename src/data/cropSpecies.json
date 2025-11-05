@@ -1,0 +1,12 @@
+[
+  { "id": "WHEAT_BREAD",  "latin": "Triticum aestivum", "variety": "Bread Wheat" },
+  { "id": "WHEAT_DURUM",  "latin": "Triticum durum",    "variety": "Durum Wheat" },
+  { "id": "WHEAT_SPELT",  "latin": "Triticum spelta",   "variety": "Spelt" },
+  { "id": "BARLEY",       "latin": "Hordeum vulgare",   "variety": "Barley" },
+  { "id": "RYE",          "latin": "Secale cereale",    "variety": "Rye" },
+  { "id": "OATS",         "latin": "Avena sativa",      "variety": "Oats" },
+  { "id": "TRITICALE",    "latin": "Triticosecale",     "variety": "Triticale" },
+  { "id": "MAIZE_GRAIN",  "latin": "Zea mays",          "variety": "Grain Maize" },
+  { "id": "MAIZE_SILAGE", "latin": "Zea mays",          "variety": "Silage Maize" },
+  { "id": "BUCKWHEAT",    "latin": "Fagopyrum esculentum", "variety": "Buckwheat" }
+]

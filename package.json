@@ -10,9 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@turf/turf": "^7.2.0",
+    "axios": "^1.11.0",
     "bootstrap": "^5.3.7",
+    "i18next": "^25.3.2",
+    "js-cookie": "^3.0.5",
+    "maplibre-gl": "^5.8.0",
     "react": "^19.1.0",
+    "react-bootstrap": "^2.10.10",
+    "react-country-flag": "^3.1.0",
     "react-dom": "^19.1.0",
+    "react-i18next": "^15.6.1",
+    "react-map-gl": "^8.1.0",
     "react-router-dom": "^7.7.1"
   },
   "devDependencies": {
@@ -24,6 +33,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "sass": "^1.89.2",
     "vite": "^7.0.4"
   }
 }

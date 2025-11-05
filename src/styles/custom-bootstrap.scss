@@ -1,0 +1,22 @@
+// src/styles/custom.scss
+
+// 1) Tell Sass where to look for modules (optional, Vite/Cra do this by default)
+// @use "sass:map";
+
+// 2) Override Bootstrap’s variables via the `with` clause
+@use "bootstrap/scss/bootstrap" with (
+  // color palette from your logo
+  $primary:   #5289C8,
+  $secondary: #C8CC27,
+  $success:   #4CAF50,
+  $info:      #17A2B8,
+  $warning:   #FF7043,
+  $danger:    #DC3545,
+  $light:     #f8f9fa,
+  $dark:      #495057,
+
+  // (Optionally) any other variables you want to tweak…
+  // $font-family-sans-serif: "Your Font", sans-serif,
+  // $body-bg:            #f0f0f0,
+  // …
+);

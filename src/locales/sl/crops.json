@@ -1,0 +1,14 @@
+{
+  "species": {
+    "WHEAT_BREAD":  "Pšenica (navadna)",
+    "WHEAT_DURUM":  "Pšenica (durum)",
+    "WHEAT_SPELT":  "Pira",
+    "BARLEY":       "Ječmen",
+    "RYE":          "Rž",
+    "OATS":         "Oves",
+    "TRITICALE":    "Tritikala",
+    "MAIZE_GRAIN":  "Koruza (zrnje)",
+    "MAIZE_SILAGE": "Koruza (silaža)",
+    "BUCKWHEAT":    "Ajda"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "nav": {
+    "appName": "OpenAgri",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "sidebar": {
+    "overview": "Overview",
+    "users": "Users",
+    "reports": "Reports"
+  },
+  "dashboard": {
+    "plot": "Parcels",
+    "crops": "Crops",
+    "pestControl": "Pests Control",
+    "farm": "Farms"
+
+  },
+  "home": {
+    "login": "Login",
+    "register": "Register"
+  },
+  "login": {
+    "title": "Please sign in",
+    "username": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Login"
+  },
+  "register": {
+    "title": "Register",
+    "username": "Username",
+    "email": "Email Address",
+    "password": "Password",
+    "accessCode": "Access Code",
+    "submit": "Register",
+    "invalidAccessCode": "Invalid access code"
+  },
+  "plot": {
+    "add": "Add new parcel",
+    "search": "Search for parcels",
+    "longitude": "Longitude",
+    "longitudePlaceholder": "Pick longitude from map",
+    "latitudePlaceholder": "Pick latitude from map",
+    "latitude": "Latitude",
+    "size": "Size",
+    "size.placeholder": "Enter size in hectares",
+    "tapMap": "Tap the map to pick a parcel's location",
+    "size.title": "Set size of you parcel in hectares (ha)",
+    "size.help": "Use the buttons to pick size in hectares or input the value manually"
+  },
+  "farm": {
+    "add": "Add new farm",
+    "search": "Search for farms",
+    "firstname": "First name of the owner",
+    "firstname.placeholder": "Enter first name",
+    "lastname": "Last name of the owner",
+    "lastname.placeholder": "Enter last name",
+    "address": "Address of the farm",
+    "address.placeholder": "Enter street address of the farm",
+    "country": "Country",
+    "country.placeholder": "Enter country",
+    "city": "City",
+    "city.placeholder": "Enter city",
+    "postalCode": "Postal code",
+    "postalCode.placeholder": "Enter postal code",
+    "street": "Street",
+    "street.placeholder": "Enter street",
+    "number": "House number",
+    "number.placeholder": "Enter house number",
+    "confirm": "Check the farm data and submit"
+  },
+  "button": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "update": "Update",
+    "next": "Next",
+    "add": "Add",
+    "back": "Back",
+    "submit": "Submit"
+  }
+}

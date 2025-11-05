@@ -1,0 +1,14 @@
+{
+  "species": {
+    "WHEAT_BREAD":  "Bread Wheat",
+    "WHEAT_DURUM":  "Durum Wheat",
+    "WHEAT_SPELT":  "Spelt",
+    "BARLEY":       "Barley",
+    "RYE":          "Rye",
+    "OATS":         "Oats",
+    "TRITICALE":    "Triticale",
+    "MAIZE_GRAIN":  "Grain Maize",
+    "MAIZE_SILAGE": "Silage Maize",
+    "BUCKWHEAT":    "Buckwheat"
+  }
+}
