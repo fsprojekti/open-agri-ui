@@ -33,6 +33,28 @@ export default function Beehive() {
                             {t('beehive.add', 'Add beehive')}
                         </Button>
                     </Col>
+
+                    <Col md={6}>
+                        <Button
+                            variant="info"
+                            className="w-100 py-5 fs-3 fw-bold shadow-lg"
+                            onClick={() => navigate('/beehive/observe')}
+                        >
+                            {t('beehive.observe', 'Observe beehive')}
+                        </Button>
+                    </Col>
+
+                    <Col md={6}>
+                        <Button
+                            variant="warning"
+                            className="w-100 py-5 fs-3 fw-bold shadow-lg"
+                            onClick={() => navigate('/beehive/manage')}
+                        >
+                            {t('beehive.manage', 'Manage beehive')}
+                        </Button>
+                    </Col>
+
+
                 </Row>
             </Container>
         </>

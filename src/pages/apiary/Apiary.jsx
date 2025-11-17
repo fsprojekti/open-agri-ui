@@ -33,6 +33,27 @@ export default function Apiary() {
                             {t('apiary.add', 'Add apiary')}
                         </Button>
                     </Col>
+
+                    <Col md={6}>
+                        <Button
+                            variant="info"
+                            className="w-100 py-5 fs-3 fw-bold shadow-lg"
+                            onClick={() => navigate('/apiary/observe')}
+                        >
+                            {t('apiary.observe', 'Observe apiary')}
+                        </Button>
+                    </Col>
+
+                    <Col md={6}>
+                        <Button
+                            variant="warning"
+                            className="w-100 py-5 fs-3 fw-bold shadow-lg"
+                            onClick={() => navigate('/apiary/manage')}
+                        >
+                            {t('apiary.manage', 'Manage apiary')}
+                        </Button>
+                    </Col>
+
                 </Row>
             </Container>
         </>
