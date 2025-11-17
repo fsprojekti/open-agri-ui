@@ -1,0 +1,13 @@
+// Finally import Bootstrap and override the theme-colours map via the
+// `with` clause.  We also explicitly set our base colour variables to
+// ensure consistency with the map above.
+@use "bootstrap/scss/bootstrap" with (
+  $primary:   #5289C8,
+  $secondary: #C8CC27,
+  $success:   #4CAF50,
+  $info:      #17A2B8,
+  $warning:   #FF7043,
+  $danger:    #DC3545,
+  $light:     #f8f9fa,
+  $dark:      #495057,
+);

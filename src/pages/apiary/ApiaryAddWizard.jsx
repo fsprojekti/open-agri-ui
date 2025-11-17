@@ -5,7 +5,7 @@ import { Alert, Button, Card, Spinner, Form } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
 import FarmMap from "../../components/FarmMap.jsx";
-import NumberStep from "../../components/wizard/StepNumber.jsx"; // re-used for hive count
+// NumberStep import removed because the hive count step has been eliminated
 import useDb from "../../contexts/useDb.js";
 
 // assumes you have this; if not, create API call accordingly
@@ -108,12 +108,8 @@ function StepDetails() {
 
     const [name, setName] = React.useState(data.name ?? "");
     const [desc, setDesc] = React.useState(data.description ?? "");
-    const [hives, setHives] = React.useState(
-        typeof data.hiveCount === "number" ? String(data.hiveCount) : ""
-    );
 
-    // We can reuse NumberStep just for the hive count if you prefer a full-width input screen.
-    // Here we embed both fields in a single form for convenience.
+    // We embed both fields in a single form for convenience.
 
     return (
         <div>
@@ -136,21 +132,7 @@ function StepDetails() {
                         />
                     </Form.Group>
 
-                    <Form.Group className="mb-3" controlId="apiaryHiveCount">
-                        <Form.Label>{t("apiary.hivesCount") || "Number of beehives"}</Form.Label>
-                        <Form.Control
-                            type="number"
-                            inputMode="numeric"
-                            min={0}
-                            step={1}
-                            placeholder="e.g., 8"
-                            value={hives}
-                            onChange={(e) => setHives(e.target.value.replace(",", "."))}
-                        />
-                        <Form.Text className="text-muted">
-                            {t("apiary.hivesCount.help") || "You can adjust this later."}
-                        </Form.Text>
-                    </Form.Group>
+                    {/* Hive count input removed */}
 
                     <Form.Group className="mb-3" controlId="apiaryDescription">
                         <Form.Label>{t("apiary.description") || "Description (optional)"}</Form.Label>
@@ -178,7 +160,6 @@ function StepDetails() {
                             goNext("/apiary/add/confirm", {
                                 name: name.trim(),
                                 description: desc.trim(),
-                                hiveCount: Number.isFinite(+hives) ? parseInt(hives, 10) : undefined,
                             })
                         }
                         disabled={!name.trim()}
@@ -198,7 +179,7 @@ function StepConfirm() {
 
     React.useEffect(() => { ensure(["location", "name"], "/apiary/add/location"); }, []); // eslint-disable-line
 
-    const { location, name, description, hiveCount } = data || {};
+    const { location, name, description } = data || {};
     const [busy, setBusy] = React.useState(false);
     const [error, setError] = React.useState("");
 
@@ -220,7 +201,7 @@ function StepConfirm() {
                 center: location,     // { lng, lat }
                 name,
                 description: description || "",
-                hiveCount: Number.isFinite(+hiveCount) ? +hiveCount : 0,
+                // hiveCount removed; default will be used by API
                 farm,                 // attach farm record or farm ID depending on your API
             });
 
@@ -257,10 +238,7 @@ function StepConfirm() {
                             <strong>{t("apiary.location") || "Location"}:</strong>{" "}
                             {location ? `${location.lat}, ${location.lng}` : "—"}
                         </div>
-                        <div className="mb-2">
-                            <strong>{t("apiary.hivesCount") || "Number of beehives"}:</strong>{" "}
-                            {Number.isFinite(+hiveCount) ? hiveCount : 0}
-                        </div>
+                        {/* Hive count display removed */}
                         <div className="mb-2">
                             <strong>{t("apiary.description") || "Description"}:</strong>{" "}
                             {description || "—"}

@@ -108,12 +108,13 @@ export async function addCropObservation(data) {
             unit: null,
             hasValue: data.observationType.value,
         },
+        hasAgriCrop: cropId,
         hasAgriParcel: parcelId,
         phenomenonTime: new Date().toISOString(),
         observedProperty:"crop growth"
     };
 
-    const res = await fetch(`${BASE}/v1/Observations/`, {
+    const res = await fetch(`${BASE}/v1/CropGrowthStageObservations/`, {
         method: "POST",
         headers: {
             Accept: "application/json",

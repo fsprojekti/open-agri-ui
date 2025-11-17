@@ -80,85 +80,86 @@ export async function fetchBeehives(opts = {}) {
  *    status?: number                       // default 1
  *  }
  */
-export async function addBeehive(input) {
+export async function addBeehive(dataBeehive) {
     const token = Cookies.get("jwt");
     if (!token) throw new Error("Not authenticated");
 
+    // Prefer Vite proxy in dev; service URL in prod
     const BASE = import.meta.env.DEV
         ? "/farmcalendar"
         : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
 
-    const toIso = (d) =>
-        typeof d === "string" ? d : (d instanceof Date ? d.toISOString() : new Date().toISOString());
 
-    // Validate apiary ID (FarmParcel UUID)
-    const apiaryUuid = String(
-        input?.apiaryId ??
-        input?.apiary?.id ??
-        input?.apiary?.["@id"] ??
-        ""
-    ).match(/[0-9a-f-]{36}$/i)?.[0];
-    if (!apiaryUuid) throw new Error("Missing apiaryId (FarmParcel UUID)");
 
-    const code = (input?.code || "").toString().trim();
-    if (!code) throw new Error("Missing beehive code (used as nationalID/name)");
+    // Extract farm UUID from several possible shapes
+    const farmId =
+        String(
+            dataBeehive?.farmId ??
+            dataBeehive?.farm?.id ??
+            dataBeehive?.farm?.["@id"] ??
+            ""
+        ).match(/[0-9a-f-]{36}$/i)?.[0];
+    if (!farmId) throw new Error("Missing farm id (farmId or farm.id)");
 
-    const species = (input?.species || "Apis mellifera").toString().trim();
-    const birthdate = toIso(input?.birthdate || new Date());
+    const flags = {
+        isNitroArea: false,
+        isNatura2000Area: false,
+        isPdopgArea: false,
+        isIrrigated: false,
+        isCultivatedInLevels: false,
+        isGroundSlope: false,
+        ...(dataBeehive?.flags || {}),
+    };
 
-    // Optional fields
-    const model = (input?.model || "").toString().trim();
+    let lat= Number(dataBeehive.apiaryParcel.location.lat);
+    //Move point randomly by less than 1m
+    let lng= Number(dataBeehive.apiaryParcel.location.long);
+    const randomOffset = () => (Math.random() - 0.5) * 0.00001; // ~1m
+    lat += randomOffset();
+    lng += randomOffset();
+    //Limit to 14 decimal places
+    lat = parseFloat(lat.toFixed(14));
+    lng = parseFloat(lng.toFixed(14));
 
-    // Build description from notes (+ frames if provided)
-    const description = apiaryUuid;
+    const wktPoint = `POINT (${Number(lng)} ${Number(lat)})`;
 
-    // // Construct FarmAnimal payload (per schema)
-    // const payload = {
-    //     // required
-    //     species,                // string
-    //     birthdate,              // ISO datetime
-    //     hasAgriParcel: apiaryUuid, // UUID of the apiary FarmParcel
-    //
-    //     // optional/common
-    //     nationalID: code,       // use beehive code as a stable identifier
-    //     name: code,             // human label
-    //     description,            // composed text
-    //
-    //     breed: model || null,   // store beehive "model" here
-    //     sex: input?.sex,        // optional enum (leave undefined if unknown)
-    //     isCastrated: !!input?.isCastrated, // defaults to false if not provided
-    //     status: Number.isFinite(+input?.status) ? +input.status : 1, // default active
-    // };
 
+
+
+    // ---- payload per FarmParcel schema ----
     const payload = {
         status: 1,
-        identifier,                               // string (<=255)
-        description: dataApiary?.description ?? null,
+        // string (<=255)
+        description: dataBeehive?.notes ?? null,
+        identifier: dataBeehive?.code,
 
-        validFrom: nowIso,                         // ISO datetime
-        validTo: validToIso,                       // ISO datetime
-
-        area,                                      // decimal string (0.00 default)
+        area:0,                                      // decimal string (0.00 default)
         hasIrrigationFlow: null,                   // required but nullable
 
-        category: "APIARY",                        // <— BEEHIVE for apiaries
-        inRegion: null,                            // required (nullable)
-        hasToponym: providedName || null,          // required (nullable) – store name here if provided
+        category: "BEEHIVE",                        // <— BEEHIVE for apiaries
+        inRegion:farmId,// ISO datetime                           // required (nullable)
+        hasToponym: null,          // required (nullable) – store name here if provided
 
         ...flags,                                  // required booleans
 
         depiction: null,                           // nullable URI
 
-        hasGeometry: {                             // GeometrySerializerField
-            asWKT: wktPoint(lng, lat),
+        hasGeometry: {
+            asWKT: wktPoint,
         },
 
-        location: {                                // LocationSerializerField
+        location: {
             lat: lat,
             long: lng,
         },
 
         farm: farmId,                              // required UUID
+
+        validFrom: new Date().toISOString(),                         // ISO datetime
+
+        validTo: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString(),
+
+
     };
 
     const url = `${BASE}/v1/FarmParcels/`;
@@ -180,8 +181,10 @@ export async function addBeehive(input) {
 
     if (!res.ok) {
         let msg = "";
-        try { msg = await res.text(); } catch {}
-        throw new Error(`Failed to create beehive (${res.status}) ${msg}`);
+        try {
+            msg = await res.text();
+        } catch {}
+        throw new Error(`Failed to create apiary (${res.status}) ${msg}`);
     }
 
     return res.json();

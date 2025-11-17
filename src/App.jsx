@@ -66,12 +66,12 @@ function App() {
 
                   {/*<Route path="/pests" element={<Pests />} />*/}
                   <Route path="/apiary" element={<Apiary />} />
-                  <Route path="apiary/add/*" element={<ApiaryAddWizard />} />
-                  <Route path="apiary/search/*" element={<ApiarySearchWizard />} />
+                  <Route path="/apiary/add/*" element={<ApiaryAddWizard />} />
+                  <Route path="/apiary/search/*" element={<ApiarySearchWizard />} />
 
                   <Route path="/beehive" element={<Beehive />} />
-                  <Route path="beehive/add/*" element={<BeehiveAddWizard />} />
-                  <Route path="beehive/search/*" element={<BeehiveSearchWizard />} />
+                  <Route path="/beehive/add/*" element={<BeehiveAddWizard />} />
+                  <Route path="/beehive/search/*" element={<BeehiveSearchWizard />} />
               </Route>
 
               {/* Catch-all */}
