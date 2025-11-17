@@ -4,16 +4,23 @@ import Cookies from "js-cookie";
 import { useTranslation } from "react-i18next";
 
 import { DbContext } from "./DbContext.jsx";
+
 import { fetchFarms } from "../api/farms.js";
 import { fetchParcels } from "../api/parcels.js";
-import { fetchCrops } from "../api/crops.js";
+import { fetchCrops, fetchCropsObservationTypes } from "../api/crops.js";
 
-// NEW: apiaries & beehives APIs
+// Apiaries & beehives
 import { fetchApiaries } from "../api/apiary.js";
 import { fetchBeehives } from "../api/beehive.js";
 
 // Canonical crop species list with stable IDs and LATIN name
 import cropSpeciesData from "../data/cropSpecies.json";
+
+// Static actions list
+import cropActions from "../data/cropActions.json";
+
+// Static crop observation types list
+import cropObservations from "../data/cropObservations.json";
 
 const toArray = (data) => {
     if (Array.isArray(data)) return data;
@@ -23,22 +30,33 @@ const toArray = (data) => {
     return [];
 };
 
+
+// utils (top of DbProvider.jsx or a shared utils file)
+const extractUuid = (id) => {
+    const last = String(id || "").split(":").pop();
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(last)
+        ? last
+        : "";
+};
+
+
 export default function DbProvider({ children }) {
-    // Ensure 'crops' namespace loads and re-renders on language change
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage || i18n.language;
 
-    // Auth + server data
+    /* ------------------------------- Auth & data ------------------------------- */
     const [user, setUser] = useState(null);
+
     const [farms, setFarms] = useState([]);
     const [parcels, setParcels] = useState([]);
     const [crops, setCrops] = useState([]);
 
-    // NEW: apiaries (FarmParcels with category 'apiary') + beehives
     const [apiaries, setApiaries] = useState([]);
     const [beehives, setBeehives] = useState([]);
 
-    // Canonical species (with stable id + latin binomial)
+    const [cropObservationTypes, setCropObservationTypes] = useState([]);
+
+    /* ----------------------- Crop species (static) ----------------------- */
     const cropSpecies = useMemo(
         () =>
             (Array.isArray(cropSpeciesData) ? cropSpeciesData : [])
@@ -51,7 +69,6 @@ export default function DbProvider({ children }) {
         []
     );
 
-    // Localized select options: label = "Local (Latin)"
     const cropSpeciesOptions = useMemo(() => {
         const tFixed = i18n.getFixedT(lang, "crops");
         const hasCropsBundle = i18n.hasResourceBundle(lang, "crops");
@@ -59,35 +76,124 @@ export default function DbProvider({ children }) {
             const localName = hasCropsBundle
                 ? tFixed(`species.${id}`, { defaultValue: variety || latin })
                 : variety || latin;
-            return {
-                value: id,
-                label: `${localName} (${latin})`,
-                latin,
-                variety,
-            };
+            return { value: id, label: `${localName} (${latin})`, latin, variety };
         });
     }, [i18n, lang, cropSpecies]);
 
-    // Helper to get canonical { id, latin, variety } by selected ID (for API payloads)
     const findCropSpeciesByValue = (val) =>
         (val ? cropSpecies.find((s) => s.id === val) || null : null);
 
-    /* ------------------------------- Fetchers ------------------------------- */
+    /* ----------------------- Crop actions (static) ----------------------- */
+    const prettifyKey = (k) =>
+        String(k || "")
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .replace(/^\w/, (c) => c.toUpperCase());
+
+    const cropActionOptions = useMemo(() => {
+        const tFixed = i18n.getFixedT(lang, "actions");
+        return (Array.isArray(cropActions) ? cropActions : []).map((key) => ({
+            value: String(key),
+            label: tFixed?.(key, { defaultValue: prettifyKey(key) }) ?? prettifyKey(key),
+        }));
+    }, [i18n, lang]);
+
+    const findCropActionByValue = (val) =>
+        (val ? cropActionOptions.find((a) => a.value === val) || null : null);
+
+    /* -------------------- Crop observation types (from API) ------------------- */
+    const cropObservationTypeOptions = useMemo(() => {
+        const tFixed = i18n.getFixedT(lang, "observations");
+        const pretty = (k) =>
+            String(k || "")
+                .toLowerCase()
+                .replace(/_/g, " ")
+                .replace(/^\w/, (c) => c.toUpperCase());
+
+        // Normalize to { value, label }
+        return (Array.isArray(cropObservationTypes) ? cropObservationTypes : []).map((item) => {
+            // API might return plain strings or objects
+            if (typeof item === "string") {
+                const key = item;
+                const fallback = pretty(key);
+                return {
+                    value: String(key),
+                    label: tFixed?.(key, { defaultValue: fallback }) ?? fallback,
+                };
+            }
+
+            const key = item?.value || item?.key || item?.id || "";
+            const fallback = item?.label || pretty(key);
+
+            return {
+                value: String(key),
+                label: tFixed?.(key, { defaultValue: fallback }) ?? fallback,
+            };
+        });
+    }, [cropObservationTypes, i18n, lang]);
+
+    const findCropObservationTypeByValue = (val) =>
+        (val ? cropObservationTypeOptions.find((o) => o.value === val) || null : null);
+
+    /* -------------------------------- Fetchers ------------------------------- */
     async function refreshFarms() {
-        try { setFarms(toArray(await fetchFarms())); } catch { setFarms([]); }
+        try { setFarms(toArray(await fetchFarms())); }
+        catch { setFarms([]); }
     }
+
     async function refreshParcels() {
-        try { setParcels(toArray(await fetchParcels())); } catch { setParcels([]); }
+        try { setParcels(toArray(await fetchParcels())); }
+        catch { setParcels([]); }
     }
+
     async function refreshCrops() {
-        try { setCrops(toArray(await fetchCrops())); } catch { setCrops([]); }
+        try { setCrops(toArray(await fetchCrops())); }
+        catch { setCrops([]); }
     }
 
     async function refreshApiaries() {
-        try { setApiaries(toArray(await fetchApiaries())); } catch { setApiaries([]); }
+        try { setApiaries(toArray(await fetchApiaries())); }
+        catch { setApiaries([]); }
     }
+
     async function refreshBeehives() {
-        try { setBeehives(toArray(await fetchBeehives())); } catch { setBeehives([]); }
+        try { setBeehives(toArray(await fetchBeehives())); }
+        catch { setBeehives([]); }
+    }
+
+    async function refreshCropObservationTypes() {
+        try {
+            const raw = toArray(await fetchCropsObservationTypes());
+
+            // Pick the relevant FarmActivityType entry
+            // (tweak this predicate if you have multiple)
+            // Find the specific FarmActivityType for crop growth stage observations
+            const activity =
+                raw.find(
+                    (a) =>
+                        a.category === "observation" &&
+                        a.name === "Crop Growth Stage Observation"
+                ) || raw[0];
+
+            if (!activity) {
+                setCropObservationTypes([]);
+                return;
+            }
+
+            // In your screenshot the field is "@id", not "id"
+            const activityId = extractUuid(activity["@id"] || activity.id || "");
+
+            // Map static observation codes -> objects linked to farmCalendarActivityId
+            const types = cropObservations.map((obs) => ({
+                value: String(obs),
+                farmCalendarActivityId: activityId,
+            }));
+
+            setCropObservationTypes(types);
+        } catch (error) {
+            console.log(error);
+            setCropObservationTypes([]);
+        }
     }
 
     /* ----------------------- Hydrate + initial preloads ---------------------- */
@@ -101,6 +207,7 @@ export default function DbProvider({ children }) {
             refreshCrops();
             refreshApiaries();
             refreshBeehives();
+            refreshCropObservationTypes();
         }
     }, []);
 
@@ -112,19 +219,21 @@ export default function DbProvider({ children }) {
             refreshFarms();
             refreshParcels();
             refreshCrops();
-            // NEW
             refreshApiaries();
             refreshBeehives();
+            refreshCropObservationTypes();
         };
+
         const onLogout = () => {
             setUser(null);
             setFarms([]);
             setParcels([]);
             setCrops([]);
-            // NEW
             setApiaries([]);
             setBeehives([]);
+            setCropObservationTypes([]);
         };
+
         window.addEventListener("auth:login", onLogin);
         window.addEventListener("auth:logout", onLogout);
         return () => {
@@ -151,29 +260,34 @@ export default function DbProvider({ children }) {
         () =>
             (parcels || []).map((p) => {
                 const id = p?.["@id"] || p?.id || "";
-                const label = p?.identifier || `Parcel ${String(id).slice(-8)} — ${p?.area ?? "?"} ha`;
+                const label =
+                    p?.identifier || `Parcel ${String(id).slice(-8)} — ${p?.area ?? "?"} ha`;
                 return { value: id, label };
             }),
         [parcels]
     );
 
-    // NEW: apiary select options
     const apiaryOptions = useMemo(
         () =>
             (apiaries || []).map((a) => {
                 const id = a?.["@id"] || a?.id || "";
-                const name = a?.hasToponym || a?.identifier || `Apiary ${String(id).slice(-8)}`;
+                const name =
+                    a?.hasToponym ||
+                    a?.identifier ||
+                    `Apiary ${String(id).slice(-8)}`;
                 return { value: id, label: name };
             }),
         [apiaries]
     );
 
-    // NEW: beehive select options
     const beehiveOptions = useMemo(
         () =>
             (beehives || []).map((h) => {
                 const id = h?.["@id"] || h?.id || "";
-                const code = h?.code || h?.identifier || `Hive ${String(id).slice(-8)}`;
+                const code =
+                    h?.code ||
+                    h?.identifier ||
+                    `Hive ${String(id).slice(-8)}`;
                 const model = h?.model ? ` — ${h.model}` : "";
                 return { value: id, label: `${code}${model}` };
             }),
@@ -183,25 +297,50 @@ export default function DbProvider({ children }) {
     /* --------------------------------- Value -------------------------------- */
     const value = {
         // auth
-        user, setUser,
+        user,
+        setUser,
 
         // farms
-        farms, setFarms, farmOptions, refreshFarms,
+        farms,
+        setFarms,
+        farmOptions,
+        refreshFarms,
 
         // parcels
-        parcels, setParcels, parcelOptions, refreshParcels,
+        parcels,
+        setParcels,
+        parcelOptions,
+        refreshParcels,
 
-        // crops (records from server)
-        crops, setCrops, refreshCrops,
+        // crops
+        crops,
+        setCrops,
+        refreshCrops,
 
-        // crop species (local + localized)
-        cropSpecies,            // canonical with {id, latin, variety}
-        cropSpeciesOptions,     // localized label "Local (Latin)"
-        findCropSpeciesByValue, // helper
+        // crop species
+        cropSpecies,
+        cropSpeciesOptions,
+        findCropSpeciesByValue,
 
-        // NEW: apiaries & beehives
-        apiaries, setApiaries, apiaryOptions, refreshApiaries,
-        beehives, setBeehives, beehiveOptions, refreshBeehives,
+        // crop actions
+        cropActionOptions,
+        findCropActionByValue,
+
+        // crop observation types (from API + localized)
+        cropObservationTypes,
+        cropObservationTypeOptions,
+        refreshCropObservationTypes,
+        findCropObservationTypeByValue,
+
+        // apiaries & beehives
+        apiaries,
+        setApiaries,
+        apiaryOptions,
+        refreshApiaries,
+        beehives,
+        setBeehives,
+        beehiveOptions,
+        refreshBeehives,
     };
 
     return <DbContext.Provider value={value}>{children}</DbContext.Provider>;

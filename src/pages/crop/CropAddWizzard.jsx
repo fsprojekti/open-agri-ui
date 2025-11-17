@@ -5,8 +5,8 @@ import { Alert, Button, Card, Spinner } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
 import useDb from "../../contexts/useDb.js";
-import ParcelSearch from "../../components/ParcelSearch.jsx";
-import CropSearch from "../../components/CropSearch.jsx";
+import ParcelSearchSelect from "../../components/ParcelSearchSelect.jsx";
+import CropSearchSelect from "../../components/CropSearchSelect.jsx";
 import { addCrop } from "../../api/crops.js";
 
 /* ----------------------------- Wizard store/nav ----------------------------- */
@@ -82,7 +82,7 @@ function StepSelectParcel() {
             </div>
 
             <div className="p-3" style={{ maxWidth: 560, margin: "0 auto" }}>
-                <ParcelSearch
+                <ParcelSearchSelect
                     items={items}
                     value={parcelId}
                     onChange={setParcelId}
@@ -139,7 +139,7 @@ function StepSelectCrop() {
             </div>
 
             <div className="p-3" style={{ maxWidth: 560, margin: "0 auto" }}>
-                <CropSearch
+                <CropSearchSelect
                     value={speciesValue}
                     onChange={setSpeciesValue}
                     label={t("crop.species") || "Crop species"}

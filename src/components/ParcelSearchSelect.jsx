@@ -1,4 +1,4 @@
-// file: src/components/ParcelSearch.jsx
+// file: src/components/ParcelSearchSelect.jsx
 import React from "react";
 import { Form, InputGroup, Button } from "react-bootstrap";
 import useDb from "../contexts/useDb.js";
@@ -12,7 +12,7 @@ function parcelItemsFromDb(parcels = []) {
 }
 
 /**
- * ParcelSearch
+ * ParcelSearchSelect
  *
  * Props:
  * - value: string (selected parcel UUID)
@@ -21,7 +21,7 @@ function parcelItemsFromDb(parcels = []) {
  * - placeholder?: string (default "Search parcels…")
  * - disabled?: boolean
  */
-export default function ParcelSearch({
+export default function ParcelSearchSelect({
                                          value,
                                          onChange,
                                          label = "Select parcel",

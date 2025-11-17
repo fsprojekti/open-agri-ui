@@ -1,11 +1,11 @@
-// file: src/components/CropSearch.jsx
+// file: src/components/CropSearchSelect.jsx
 import React from "react";
 import { Form, InputGroup, Button } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import useDb from "../contexts/useDb.js";
 
 /**
- * CropSearch (scrollable list with radio select, i18n-ready)
+ * CropSearchSelect (scrollable list with radio select, i18n-ready)
  *
  * Props:
  * - items: optional Array. If omitted, builds from DbContext.crops
@@ -25,7 +25,7 @@ import useDb from "../contexts/useDb.js";
  * - Alternating row colors for readability; selected row is highlighted.
  * - Click row or radio to select. Clear button resets search and selection.
  */
-export default function CropSearch({
+export default function CropSearchSelect({
                                        items,
                                        value,
                                        onChange,

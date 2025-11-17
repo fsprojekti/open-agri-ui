@@ -7,6 +7,7 @@ import { SERVICES } from '../config.js';
 // Prefer a dedicated service if you have one; fall back to gatekeeper
 const BASE = (SERVICES.farmCalendar && SERVICES.farmCalendar.baseURL) || SERVICES.gatekeeper.baseURL;
 
+
 export async function fetchParcels() {
     const token = Cookies.get('jwt');
     if (!token) throw new Error('Not authenticated');

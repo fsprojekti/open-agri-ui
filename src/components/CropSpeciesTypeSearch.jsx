@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import useDb from "../contexts/useDb.js";
 
 /**
- * CropSpeciesSearch (scrollable list with radio select, i18n-ready)
+ * CropSpeciesTypeSearch (scrollable list with radio select, i18n-ready)
  *
  * Props:
  * - items?: Array<{ value, label, latin?, variety? }>;
@@ -19,7 +19,7 @@ import useDb from "../contexts/useDb.js";
  * - disabled?: boolean (default false)
  * - emptyText?: string (default t('common.noMatches'))
  */
-export default function CropSpeciesSearch({
+export default function CropSpeciesTypeSearch({
                                               items,
                                               value,
                                               onChange,

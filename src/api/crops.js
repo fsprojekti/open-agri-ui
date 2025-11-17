@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { SERVICES } from "../config.js";
+import {SERVICES} from "../config.js";
 
 /**
  * Base URL:
@@ -85,6 +85,90 @@ export async function addCrop(data) {
     return res.json();
 }
 
+export async function addCropObservation(data) {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    // --- required fields ---
+    const parcelId = String(data?.parcelId ?? "").trim();
+    if (!parcelId) throw new Error("parcelId is required");
+
+    // cropId
+    const cropId = String(data?.cropId ?? "").trim();
+    if (!cropId) throw new Error("cropId is required");
+
+    // observationType
+    const observationKey = String(data?.observationType ?? "").trim();
+    if (!observationKey) throw new Error("observationType is required");
+
+    //First record crop observation in observation table
+    const payloadObservation = {
+        activityType: data.observationType.farmCalendarActivityId,
+        hasResult: {
+            unit: null,
+            hasValue: data.observationType.value,
+        },
+        hasAgriParcel: parcelId,
+        phenomenonTime: new Date().toISOString(),
+        observedProperty:"crop growth"
+    };
+
+    const res = await fetch(`${BASE}/v1/Observations/`, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payloadObservation),
+    });
+
+    if (!res.ok) {
+        let msg = "";
+        try {
+            msg = await res.text();
+        } catch {
+        }
+        throw new Error(`Failed to create crop (${res.status}) ${msg}`);
+    }
+    //cons
+    return res.json();
+
+
+    // const payload = {
+    //     hasAgriParcel: parcelId,
+    //     hasAgriCrop: cropId,
+    //     hasResult: {
+    //         unit: null,
+    //         hasValue: observationKey,
+    //     }
+    // }
+    //
+    // //log payload
+    // console.log("Creating crop observation with payload:", payload);
+    //
+    // const res = await fetch(`${BASE}/v1/CropGrowthStageObservations/`, {
+    //     method: "POST",
+    //     headers: {
+    //         Accept: "application/json",
+    //         "Content-Type": "application/json",
+    //         Authorization: `Bearer ${token}`,
+    //     },
+    //     body: JSON.stringify(payload),
+    // });
+    //
+    // if (!res.ok) {
+    //     let msg = "";
+    //     try { msg = await res.text(); } catch {}
+    //     throw new Error(`Failed to create crop (${res.status}) ${msg}`);
+    // }
+    // return res.json();
+}
+
+
+
+
+
 /**
  * Fetch crops list (shape-agnostic array unwrap).
  */
@@ -111,4 +195,62 @@ export async function fetchCrops() {
     if (Array.isArray(data?.results)) return data.results;
     if (Array.isArray(data?.data)) return data.data;
     return [];
+}
+
+export async function fetchCropActionsTypes() {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    const url = `${getBase()}/v1/FarmCrops/`;
+    const res = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        let msg = "";
+        try {
+            msg = await res.text();
+        } catch {
+        }
+        throw new Error(`Failed to fetch crops (${res.status}) ${msg}`);
+    }
+    const data = await res.json();
+    // unwrap common envelope shapes
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.results)) return data.results;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+
+}
+
+export async function fetchCropsObservationTypes() {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    const url = `${getBase()}/v1/FarmCalendarActivityTypes/?category=observation&name=Crop Growth Stage Observation`;
+    const res = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        let msg = "";
+        try {
+            msg = await res.text();
+        } catch {
+        }
+        throw new Error(`Failed to fetch crops (${res.status}) ${msg}`);
+    }
+    const data = await res.json();
+    // unwrap common envelope shapes
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.results)) return data.results;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+
 }

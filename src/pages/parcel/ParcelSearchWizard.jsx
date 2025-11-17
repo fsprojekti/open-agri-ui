@@ -4,7 +4,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { Alert, Button } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
-import ParcelSearch from "../../components/ParcelSearch.jsx";
+import ParcelSearchSelect from "../../components/ParcelSearchSelect.jsx";
 
 const STORE_KEY = "parcelSearchWizard.selection.v1";
 
@@ -48,7 +48,7 @@ function StepSelectParcel() {
             </div>
 
             <div className="p-3" style={{ maxWidth: 560, margin: "0 auto" }}>
-                <ParcelSearch
+                <ParcelSearchSelect
                     value={parcelId}
                     onChange={setParcelId}
                     label={t("parcel.select") || "Parcel"}

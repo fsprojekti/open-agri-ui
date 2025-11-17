@@ -4,7 +4,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { Alert, Button } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
-import CropSearchSelect from "../../components/CropSearch.jsx";
+import CropSearchSelect from "../../components/CropSearchSelect.jsx";
 
 const STORE_KEY = "cropSearchWizard.selection.v1";
 

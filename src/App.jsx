@@ -26,6 +26,8 @@ import ParcelSearchWizard from "./pages/parcel/ParcelSearchWizard.jsx";
 import CropSearchWizard from "./pages/crop/CropSearchWizzad.jsx";
 import ApiarySearchWizard from "./pages/apiary/ApiarySearchWizzard.jsx";
 import BeehiveSearchWizard from "./pages/beehive/BeehiveSearchWizzard.jsx";
+import CropManageWizard from "./pages/crop/CropManageWizard.jsx";
+import CropObserveWizard from "./pages/crop/CropObserveWizzard.jsx";
 
 
 
@@ -55,9 +57,13 @@ function App() {
                   <Route path="/parcels/search/*" element={<ParcelSearchWizard />} />
                   {/* add more protected routes here, e.g.: */}
                   {/* <Route path="/plots" element={<Plots />} />*/}
+
                   <Route path="/crops" element={<Crop />} />
                   <Route path="/crops/add/*" element={<CropAddWizard />} />
                   <Route path="/crops/search/*" element={<CropSearchWizard />} />
+                  <Route path="/crops/observe/*" element={<CropObserveWizard />} />
+                  <Route path="/crops/manage/*" element={<CropManageWizard />} />
+
                   {/*<Route path="/pests" element={<Pests />} />*/}
                   <Route path="/apiary" element={<Apiary />} />
                   <Route path="apiary/add/*" element={<ApiaryAddWizard />} />
@@ -66,7 +72,6 @@ function App() {
                   <Route path="/beehive" element={<Beehive />} />
                   <Route path="beehive/add/*" element={<BeehiveAddWizard />} />
                   <Route path="beehive/search/*" element={<BeehiveSearchWizard />} />
-
               </Route>
 
               {/* Catch-all */}

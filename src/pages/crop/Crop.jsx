@@ -33,6 +33,26 @@ export default function Crop() {
                             {t('crop.add', 'Add crop')}
                         </Button>
                     </Col>
+
+                    <Col md={6}>
+                        <Button
+                            variant="info"
+                            className="w-100 py-5 fs-3 fw-bold shadow-lg"
+                            onClick={() => navigate('/crops/observe')}
+                        >
+                            {t('crop.manage', 'Observe crop')}
+                        </Button>
+                    </Col>
+
+                    <Col md={6}>
+                        <Button
+                            variant="warning"
+                            className="w-100 py-5 fs-3 fw-bold shadow-lg"
+                            onClick={() => navigate('/crops/manage')}
+                        >
+                            {t('crop.manage', 'Manage crop')}
+                        </Button>
+                    </Col>
                 </Row>
             </Container>
         </>
