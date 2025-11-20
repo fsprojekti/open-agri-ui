@@ -1,0 +1,10 @@
+[
+  {
+    "value": "TEMPERATURE",
+    "unit": "°C"
+  },
+  {
+    "value": "HUMIDITY",
+    "unit": "%"
+  }
+]

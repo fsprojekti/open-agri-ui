@@ -28,6 +28,7 @@ import ApiarySearchWizard from "./pages/apiary/ApiarySearchWizzard.jsx";
 import BeehiveSearchWizard from "./pages/beehive/BeehiveSearchWizzard.jsx";
 import CropManageWizard from "./pages/crop/CropManageWizard.jsx";
 import CropObserveWizard from "./pages/crop/CropObserveWizzard.jsx";
+import ApiaryObserveWizard from "./pages/apiary/ApiaryObserveWizard.jsx";
 
 
 
@@ -68,6 +69,7 @@ function App() {
                   <Route path="/apiary" element={<Apiary />} />
                   <Route path="/apiary/add/*" element={<ApiaryAddWizard />} />
                   <Route path="/apiary/search/*" element={<ApiarySearchWizard />} />
+                  <Route path="/apiary/observe/*" element={<ApiaryObserveWizard />} />
 
                   <Route path="/beehive" element={<Beehive />} />
                   <Route path="/beehive/add/*" element={<BeehiveAddWizard />} />

@@ -64,6 +64,40 @@
     "delete": "Izbriši",
     "edit": "Uredi",
     "update": "Posodobi",
-    "next": "Naprej"
+    "next": "Naprej",
+    "back": "Nazaj",
+    "submit": "Pošlji",
+    "confirm": "Potrdi",
+    "pleaseWait": "Prosimo, počakajte…",
+    "working": "Obdelava…"
+  },
+
+
+  "apiary": {
+    "observe": "Opazuj čebelnjak",
+    "select": "Izberi čebelnjak",
+    "label": "Čebelnjak",
+    "confirm": "Potrditev"
+  },
+  "observation": {
+    "selectType": "Izberi tip opazovanja",
+    "searchPlaceholder": "Poišči tipe opazovanj…",
+    "enterValue": "Vnesi vrednost",
+    "confirm": "Potrditev",
+    "type": "Tip opazovanja",
+    "value": "Vrednost",
+    "aria": {
+      "search": "Iskanje",
+      "selectType": "Izberi ta tip opazovanja"
+    }
+  },
+  "common": {
+    "noMatches": "Ni zadetkov",
+    "result": "rezultat",
+    "results": "rezultati",
+    "scrollForMore": " (pomakni za več)",
+    "enterNumber": "Vnesi številko",
+    "enterText": "Vnesi besedilo",
+    "clear": "Počisti"
   }
 }

@@ -1,0 +1,11 @@
+[
+  { "value": "TEMPERATURE",        "unit": "°C"  },
+  { "value": "HUMIDITY",           "unit": "%"   },
+  { "value": "BEE_ACTIVITY",       "unit": null  },
+  { "value": "DISEASE_SIGNS",      "unit": null  },
+  { "value": "HIVE_WEIGHT",        "unit": "kg"  },
+  { "value": "BROOD_PATTERN",      "unit": null  },
+  { "value": "FOOD_STORES",        "unit": "kg"  },
+  { "value": "QUEEN_STATUS",       "unit": null  },
+  { "value": "SWARMING_BEHAVIOR",  "unit": null  }
+]

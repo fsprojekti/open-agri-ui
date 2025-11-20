@@ -2,6 +2,17 @@
 import Cookies from "js-cookie";
 import { SERVICES } from "../config.js";
 
+
+/**
+ * Base URL:
+ * - DEV: use Vite proxy key `/farmcalendar`
+ * - PROD: use configured service URL (fallbacks kept for your config variants)
+ */
+function getBase() {
+    return import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
+}
 /**
  * Optional helper to list apiaries (FarmParcels with category 'apiary').
  * You can delete this if you don't need it.
@@ -166,5 +177,105 @@ export async function addApiary(dataApiary) {
 
     return res.json();
 }
+/**
+ * Create an apiary observation record.
+ *
+ * Required in `data`:
+ *   - apiaryId        (uuid string)
+ *   - observationType (object with at least { value: string })
+ *   - observationValue (string or number)
+ *
+ * Optional:
+ *   - unit            (string | null) — if provided, will be sent in hasResult.unit
+ *   - phenomenonTime  (ISO string) — defaults to current timestamp
+ *   - observedProperty (string) — defaults to the observation type value
+ *
+ * You may need to adjust the endpoint or payload structure to match your backend.
+ */
+export async function addApiaryObservation(data) {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
 
-//
+    const apiaryId = String(data?.apiaryId ?? "").trim();
+    if (!apiaryId) throw new Error("apiaryId is required");
+
+    const obsValue = data?.observationType?.value || data?.observationType || "";
+    if (!obsValue) throw new Error("observationType is required");
+
+    const value = String(data?.observationValue ?? "").trim();
+    if (!value) throw new Error("observationValue is required");
+
+    // Determine base URL (dev uses Vite proxy)
+    const BASE = import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL ||
+            SERVICES.farmCalendar?.baseURL ||
+            SERVICES.gatekeeper.baseURL);
+
+
+
+    const payload = {
+        activityType: null, // adjust if your backend needs a specific FarmCalendarActivityId
+        hasResult: {
+            unit: data?.unit ?? null,
+            hasValue: value,
+        },
+        hasAgriParcel: apiaryId,
+        phenomenonTime: data?.phenomenonTime || new Date().toISOString(),
+        observedProperty: data?.observedProperty || obsValue,
+    };
+
+    const res = await fetch(`${BASE}/v1/ApiaryObservations/`, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (import.meta.env.DEV) {
+        console.log("[addApiaryObservation] →", payload);
+        console.log("[addApiaryObservation] ←", res.status, res.statusText);
+    }
+
+    if (!res.ok) {
+        let msg = "";
+        try { msg = await res.text(); } catch {}
+        throw new Error(`Failed to create apiary observation (${res.status}) ${msg}`);
+    }
+
+    return res.json();
+}
+
+export async function fetchApiaryObservationTypes() {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    const url = `${getBase()}/v1/FarmCalendarActivityTypes/?category=observation&name=Apiary Observation`;
+    const res = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        let msg = "";
+        try {
+            msg = await res.text();
+        } catch {
+        }
+        throw new Error(`Failed to fetch crops (${res.status}) ${msg}`);
+    }
+    const data = await res.json();
+    // unwrap common envelope shapes
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.results)) return data.results;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+
+}
+
+

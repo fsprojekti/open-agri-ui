@@ -16,7 +16,6 @@
     "crops": "Crops",
     "pestControl": "Pests Control",
     "farm": "Farms"
-
   },
   "home": {
     "login": "Login",
@@ -44,8 +43,8 @@
     "search": "Search for parcels",
     "longitude": "Longitude",
     "longitudePlaceholder": "Pick longitude from map",
-    "latitudePlaceholder": "Pick latitude from map",
     "latitude": "Latitude",
+    "latitudePlaceholder": "Pick latitude from map",
     "size": "Size",
     "size.placeholder": "Enter size in hectares",
     "tapMap": "Tap the map to pick a parcel's location",
@@ -82,6 +81,38 @@
     "next": "Next",
     "add": "Add",
     "back": "Back",
-    "submit": "Submit"
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "pleaseWait": "Please wait…",
+    "working": "Working…"
+  },
+
+
+  "apiary": {
+    "observe": "Observe apiary",
+    "select": "Select apiary",
+    "label": "Apiary",
+    "confirm": "Confirm"
+  },
+  "observation": {
+    "selectType": "Select observation type",
+    "searchPlaceholder": "Search observation types…",
+    "enterValue": "Enter value",
+    "confirm": "Confirm details",
+    "type": "Observation type",
+    "value": "Value",
+    "aria": {
+      "search": "Search",
+      "selectType": "Select this observation type"
+    }
+  },
+  "common": {
+    "noMatches": "No matches",
+    "result": "result",
+    "results": "results",
+    "scrollForMore": " (scroll for more)",
+    "enterNumber": "Enter a number",
+    "enterText": "Enter text",
+    "clear": "Clear"
   }
 }

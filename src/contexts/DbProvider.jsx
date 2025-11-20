@@ -10,7 +10,7 @@ import { fetchParcels } from "../api/parcels.js";
 import { fetchCrops, fetchCropsObservationTypes } from "../api/crops.js";
 
 // Apiaries & beehives
-import { fetchApiaries } from "../api/apiary.js";
+import {fetchApiaries, fetchApiaryObservationTypes} from "../api/apiary.js";
 import { fetchBeehives } from "../api/beehive.js";
 
 // Canonical crop species list with stable IDs and LATIN name
@@ -20,7 +20,7 @@ import cropSpeciesData from "../data/cropSpecies.json";
 import cropActions from "../data/cropActions.json";
 
 // Static crop observation types list
-import cropObservations from "../data/cropObservations.json";
+import cropObservations from "../data/cropObserveTypes.json";
 
 const toArray = (data) => {
     if (Array.isArray(data)) return data;
@@ -52,6 +52,8 @@ export default function DbProvider({ children }) {
     const [crops, setCrops] = useState([]);
 
     const [apiaries, setApiaries] = useState([]);
+    const [apiaryObservationTypes, setApiaryObservationTypes] = useState([]);
+
     const [beehives, setBeehives] = useState([]);
 
     const [cropObservationTypes, setCropObservationTypes] = useState([]);
@@ -135,6 +137,16 @@ export default function DbProvider({ children }) {
     const findCropObservationTypeByValue = (val) =>
         (val ? cropObservationTypeOptions.find((o) => o.value === val) || null : null);
 
+
+    /* ------------------------------- Apiary observation types (from API) ------------------------------- */
+    // const apiaryObservationTypeOptions = useMemo(() => {
+    //     const tFixed = i18n.getFixedT(lang, "observations");
+    // }
+
+
+
+
+
     /* -------------------------------- Fetchers ------------------------------- */
     async function refreshFarms() {
         try { setFarms(toArray(await fetchFarms())); }
@@ -194,6 +206,42 @@ export default function DbProvider({ children }) {
             console.log(error);
             setCropObservationTypes([]);
         }
+    }
+
+    async function refreshApiaryObservationTypes(){
+        try {
+            const raw = toArray(await fetchApiaryObservationTypes());
+
+            // Pick the relevant FarmActivityType entry
+            // (tweak this predicate if you have multiple)
+            // Find the specific FarmActivityType for crop growth stage observations
+            const activity =
+                raw.find(
+                    (a) =>
+                        a.category === "observation" &&
+                        a.name === "Apiary Observation"
+                ) || raw[0];
+
+            if (!activity) {
+                setApiaryObservationTypes([]);
+                return;
+            }
+
+            // In your screenshot the field is "@id", not "id"
+            const activityId = extractUuid(activity["@id"] || activity.id || "");
+
+            // Map static observation codes -> objects linked to farmCalendarActivityId
+            const types = cropObservations.map((obs) => ({
+                value: String(obs),
+                farmCalendarActivityId: activityId,
+            }));
+
+            setCropObservationTypes(types);
+        } catch (error) {
+            console.log(error);
+            setCropObservationTypes([]);
+        }
+
     }
 
     /* ----------------------- Hydrate + initial preloads ---------------------- */
@@ -345,3 +393,5 @@ export default function DbProvider({ children }) {
 
     return <DbContext.Provider value={value}>{children}</DbContext.Provider>;
 }
+
+
