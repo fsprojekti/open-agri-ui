@@ -1,6 +1,6 @@
 // src/api/apiaries.js
 import Cookies from "js-cookie";
-import { SERVICES } from "../config.js";
+import {SERVICES} from "../config.js";
 
 
 /**
@@ -9,6 +9,19 @@ import { SERVICES } from "../config.js";
  * - PROD: use configured service URL (fallbacks kept for your config variants)
  */
 function getBase() {
+    return import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
+}
+
+/**
+ * Determine the base URL for API calls. In development mode it uses the
+ * Vite proxy path `/farmcalendar`; otherwise it uses the configured farm
+ * calendar service URL (falling back to other service configs for
+ * compatibility). This helper mirrors the pattern used in other API
+ * modules.
+ */
+function getBaseUrl() {
     return import.meta.env.DEV
         ? "/farmcalendar"
         : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
@@ -276,6 +289,143 @@ export async function fetchApiaryObservationTypes() {
     if (Array.isArray(data?.data)) return data.data;
     return [];
 
+}
+
+export async function fetchApiaryActionTypes() {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+    const BASE = import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
+    const url = `${BASE}/v1/FarmCalendarActivityTypes/?category=activity&name=Apiary Manage`;
+    const res = await fetch(url, {headers: {Accept: "application/json", Authorization: `Bearer ${token}`}});
+    if (!res.ok) throw new Error(`Failed to fetch apiary action types (${res.status})`);
+    const json = await res.json();
+    return Array.isArray(json?.items) ? json.items : Array.isArray(json?.results) ? json.results : json;
+}
+
+export async function addApiaryAction(data) {
+    // `data` must include: { apiaryId, actionType: { value, farmCalendarActivityId, unit }, value }
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    const apiaryId = data.apiaryId?.trim();
+    const act = data.actionType;
+    const activityTypeId = act?.farmCalendarActivityId;
+    const value = data.value?.toString() ?? "";
+
+    const BASE = import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL ||
+            SERVICES.farmCalendar?.baseURL ||
+            SERVICES.gatekeeper.baseURL);
+
+    // Adjust the URL and payload keys to match your API’s schema.
+    const payload = {
+        activityType: activityTypeId,
+        hasAgriParcel: apiaryId,
+        hasStartDatetime: new Date().toISOString(),
+        title: act?.value,
+        details:value?.value ?? "",
+        usesAgriculturalMachinery: [],
+    };
+
+    const res = await fetch(`${BASE}/v1/FarmCalendarActivities/`, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(`Failed to create apiary action (${res.status}) ${msg}`);
+    }
+    return res.json();
+}
+
+/**
+ * Fetch a list of apiary observation records for a given apiary (FarmParcel).
+ *
+ * The backend should support filtering by the `hasAgriParcel` parameter (or
+ * similar) to return only observations for the specified apiary. If your
+ * backend uses a different query parameter name, update the URL
+ * accordingly. The response is unwrapped from common container shapes
+ * (`results`, `items`, `data`) and returned as a plain array.
+ *
+ * @param {string} apiaryId - UUID of the apiary (FarmParcel)
+ * @returns {Promise<Array>} A promise resolving to an array of observation objects
+ */
+export async function fetchApiaryObservations(apiaryId) {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    const uuid = String(apiaryId || "").match(/[0-9a-f-]{36}/i)?.[0] || "";
+    if (!uuid) throw new Error("apiaryId is required");
+
+    const BASE = getBaseUrl();
+    // Adjust the query parameter name if your backend expects a different one
+    const url = `${BASE}/v1/Observations/?hasAgriParcel=${encodeURIComponent(uuid)}`;
+
+    const res = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        let msg = "";
+        try { msg = await res.text(); } catch {}
+        throw new Error(`Failed to fetch apiary observations (${res.status}) ${msg}`);
+    }
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.results)) return data.results;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+}
+
+/**
+ * Fetch a list of apiary action records for a given apiary (FarmParcel).
+ *
+ * This function queries the backend for apiary actions, filtering by
+ * `hasAgriParcel` (or similar) so only records linked to the specified apiary
+ * are returned. Modify the endpoint or query parameter as required by
+ * your backend. The result is normalised to a simple array.
+ *
+ * @param {string} apiaryId - UUID of the apiary (FarmParcel)
+ * @returns {Promise<Array>} A promise resolving to an array of action objects
+ */
+export async function fetchApiaryActions(apiaryId) {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    const uuid = String(apiaryId || "").match(/[0-9a-f-]{36}/i)?.[0] || "";
+    if (!uuid) throw new Error("apiaryId is required");
+
+    const BASE = getBaseUrl();
+    const url = `${BASE}/v1/FarmCalendarActivities/?hasAgriParcel=${encodeURIComponent(uuid)}`;
+    const res = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        let msg = "";
+        try { msg = await res.text(); } catch {}
+        throw new Error(`Failed to fetch apiary actions (${res.status}) ${msg}`);
+    }
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.results)) return data.results;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
 }
 
 

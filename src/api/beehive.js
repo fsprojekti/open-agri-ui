@@ -220,3 +220,68 @@ export async function fetchBeehiveObservationTypes() {
     return [];
 }
 
+export async function fetchBeehiveActionTypes() {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+    const BASE = import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
+    const url = `${BASE}/v1/FarmCalendarActivityTypes/?category=activity&name=Beehive Manage`;
+    const res = await fetch(url, { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(`Failed to fetch beehive action types (${res.status})`);
+    const json = await res.json();
+    return Array.isArray(json?.items) ? json.items : Array.isArray(json?.results) ? json.results : json;
+}
+
+/**
+ * Create a beehive action record.
+ *
+ * Required fields in `data`:
+ *   - beehiveId: string (UUID of the beehive parcel)
+ *   - actionType: { value: string, farmCalendarActivityId: string, unit?: string }
+ *   - value: string or number (the action’s value)
+ */
+export async function addBeehiveAction(data) {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    const beehiveId = (data.beehiveId || "").trim();
+    const act = data.actionType || {};
+    const activityTypeId = act.farmCalendarActivityId;
+    const value = String(data.value ?? "").trim();
+    const unit = act.unit ?? null;
+
+    const BASE = import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL ||
+            SERVICES.farmCalendar?.baseURL ||
+            SERVICES.gatekeeper.baseURL);
+
+    // Adjust `/BeehiveActions/` and payload to match your API schema.
+    // Adjust the URL and payload keys to match your API’s schema.
+    const payload = {
+        activityType: activityTypeId,
+        hasAgriParcel: beehiveId,
+        hasStartDatetime: new Date().toISOString(),
+        title: act?.value,
+        details:value?.value ?? "",
+        usesAgriculturalMachinery: [],
+    };
+
+    const res = await fetch(`${BASE}/v1/FarmCalendarActivities/`, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(`Failed to create beehive action (${res.status}) ${msg}`);
+    }
+    return res.json();
+}
+

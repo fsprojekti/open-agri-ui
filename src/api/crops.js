@@ -198,35 +198,6 @@ export async function fetchCrops() {
     return [];
 }
 
-export async function fetchCropActionsTypes() {
-    const token = Cookies.get("jwt");
-    if (!token) throw new Error("Not authenticated");
-
-    const url = `${getBase()}/v1/FarmCrops/`;
-    const res = await fetch(url, {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (!res.ok) {
-        let msg = "";
-        try {
-            msg = await res.text();
-        } catch {
-        }
-        throw new Error(`Failed to fetch crops (${res.status}) ${msg}`);
-    }
-    const data = await res.json();
-    // unwrap common envelope shapes
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.items)) return data.items;
-    if (Array.isArray(data?.results)) return data.results;
-    if (Array.isArray(data?.data)) return data.data;
-    return [];
-
-}
-
 export async function fetchCropsObservationTypes() {
     const token = Cookies.get("jwt");
     if (!token) throw new Error("Not authenticated");
@@ -254,4 +225,17 @@ export async function fetchCropsObservationTypes() {
     if (Array.isArray(data?.data)) return data.data;
     return [];
 
+}
+
+export async function fetchCropActionTypes() {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+    const BASE = import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
+    const url = `${BASE}/v1/FarmCalendarActivityTypes/?category=activity&name=Crop Manage`;
+    const res = await fetch(url, { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error(`Failed to fetch crop action types (${res.status})`);
+    const json = await res.json();
+    return Array.isArray(json?.items) ? json.items : Array.isArray(json?.results) ? json.results : json;
 }

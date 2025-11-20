@@ -16,13 +16,18 @@ import { fetchBeehives, fetchBeehiveObservationTypes } from "../api/beehive.js";
 // Canonical crop species list with stable IDs and LATIN name
 import cropSpeciesData from "../data/cropSpecies.json";
 
-// Static actions list
-import cropActions from "../data/cropActions.json";
-
 // Static crop observation types list
 import cropObservations from "../data/cropObserveTypes.json";
 import apiaryObservations from "../data/apiaryObserveTypes.json";
 import beehiveObservations from "../data/beehiveObserveTypes.json";
+
+import cropActions from "../data/cropActions.json";
+import apiaryActions from "../data/apiaryActions.json";
+import beehiveActions from "../data/beehiveActions.json";
+
+import { fetchCropActionTypes } from "../api/crops.js";
+import { fetchApiaryActionTypes } from "../api/apiary.js";
+import { fetchBeehiveActionTypes } from "../api/beehive.js";
 
 
 const toArray = (data) => {
@@ -61,6 +66,10 @@ export default function DbProvider({ children }) {
     const [cropObservationTypes, setCropObservationTypes] = useState([]);
     const [apiaryObservationTypes, setApiaryObservationTypes] = useState([]);
     const [beehiveObservationTypes, setBeehiveObservationTypes] = useState([]);
+
+    const [cropActionTypes, setCropActionTypes] = useState([]);
+    const [apiaryActionTypes, setApiaryActionTypes] = useState([]);
+    const [beehiveActionTypes, setBeehiveActionTypes] = useState([]);
 
 
     /* ----------------------- Crop species (static) ----------------------- */
@@ -304,6 +313,60 @@ export default function DbProvider({ children }) {
         }
     }
 
+    async function refreshCropActionTypes() {
+        try {
+            const raw = await fetchCropActionTypes();
+            const activity = raw.find(a => a.category === "activity" && a.name === "Crop Action") || raw[0];
+            if (!activity) { setCropActionTypes([]); return; }
+            const activityId = extractUuid(activity["@id"] || activity.id);
+            const types = cropActions.map(item => ({
+                value: item.value,
+                unit: item.unit ?? null,
+                farmCalendarActivityId: activityId
+            }));
+            setCropActionTypes(types);
+        } catch (err) {
+            console.error(err);
+            setCropActionTypes([]);
+        }
+    }
+
+    async function refreshApiaryActionTypes() {
+        try {
+            const raw = await fetchApiaryActionTypes();
+            const activity = raw.find(a => a.category === "activity" && a.name === "Apiary Action") || raw[0];
+            if (!activity) { setApiaryActionTypes([]); return; }
+            const activityId = extractUuid(activity["@id"] || activity.id);
+            const types = apiaryActions.map(item => ({
+                value: item.value,
+                unit: item.unit ?? null,
+                farmCalendarActivityId: activityId
+            }));
+            setApiaryActionTypes(types);
+        } catch (err) {
+            console.error(err);
+            setApiaryActionTypes([]);
+        }
+    }
+
+    async function refreshBeehiveActionTypes() {
+        try {
+            const raw = await fetchBeehiveActionTypes();
+            const activity = raw.find(a => a.category === "activity" && a.name === "Beehive Action") || raw[0];
+            if (!activity) { setBeehiveActionTypes([]); return; }
+            const activityId = extractUuid(activity["@id"] || activity.id);
+            const types = beehiveActions.map(item => ({
+                value: item.value,
+                unit: item.unit ?? null,
+                farmCalendarActivityId: activityId
+            }));
+            setBeehiveActionTypes(types);
+        } catch (err) {
+            console.error(err);
+            setBeehiveActionTypes([]);
+        }
+    }
+
 
     /* ----------------------- Hydrate + initial preloads ---------------------- */
     useEffect(() => {
@@ -319,6 +382,9 @@ export default function DbProvider({ children }) {
             refreshCropObservationTypes();
             refreshApiaryObservationTypes();   // << add
             refreshBeehiveObservationTypes();
+            refreshCropActionTypes();    // new
+            refreshApiaryActionTypes();  // new
+            refreshBeehiveActionTypes();
         }
     }, []);
 
@@ -335,6 +401,9 @@ export default function DbProvider({ children }) {
             refreshCropObservationTypes();
             refreshApiaryObservationTypes();   // << add
             refreshBeehiveObservationTypes();
+            refreshCropActionTypes();    // new
+            refreshApiaryActionTypes();  // new
+            refreshBeehiveActionTypes();
         };
 
         const onLogout = () => {
@@ -407,6 +476,43 @@ export default function DbProvider({ children }) {
         [beehives]
     );
 
+    const cropActionTypeOptions = useMemo(() => {
+        const tFixed = i18n.getFixedT(lang, "actions");
+        return cropActionTypes.map(item => ({
+            value: item.value,
+            label: tFixed(item.value, { defaultValue: item.value }),
+            unit: item.unit,
+            farmCalendarActivityId: item.farmCalendarActivityId
+        }));
+    }, [cropActionTypes, i18n, lang]);
+
+    const apiaryActionTypeOptions = useMemo(() => {
+        const tFixed = i18n.getFixedT(lang, "actions");
+        return apiaryActionTypes.map(item => ({
+            value: item.value,
+            label: tFixed(item.value, { defaultValue: item.value }),
+            unit: item.unit,
+            farmCalendarActivityId: item.farmCalendarActivityId
+        }));
+    }, [apiaryActionTypes, i18n, lang]);
+
+    const beehiveActionTypeOptions = useMemo(() => {
+        const tFixed = i18n.getFixedT(lang, "actions");
+        return beehiveActionTypes.map(item => ({
+            value: item.value,
+            label: tFixed(item.value, { defaultValue: item.value }),
+            unit: item.unit,
+            farmCalendarActivityId: item.farmCalendarActivityId
+        }));
+    }, [beehiveActionTypes, i18n, lang]);
+
+    const findCropActionTypeByValue = (val) =>
+        cropActionTypeOptions.find(o => o.value === val) || null;
+    const findApiaryActionTypeByValue = (val) =>
+        apiaryActionTypeOptions.find(o => o.value === val) || null;
+    const findBeehiveActionTypeByValue = (val) =>
+        beehiveActionTypeOptions.find(o => o.value === val) || null;
+
     /* --------------------------------- Value -------------------------------- */
     const value = {
         // auth
@@ -465,6 +571,19 @@ export default function DbProvider({ children }) {
         beehiveObservationTypeOptions,
         refreshBeehiveObservationTypes,
         findBeehiveObservationTypeByValue,
+
+        cropActionTypes,
+        cropActionTypeOptions,
+        refreshCropActionTypes,
+        findCropActionTypeByValue,
+        apiaryActionTypes,
+        apiaryActionTypeOptions,
+        refreshApiaryActionTypes,
+        findApiaryActionTypeByValue,
+        beehiveActionTypes,
+        beehiveActionTypeOptions,
+        refreshBeehiveActionTypes,
+        findBeehiveActionTypeByValue,
     };
 
     return <DbContext.Provider value={value}>{children}</DbContext.Provider>;

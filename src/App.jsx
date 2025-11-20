@@ -29,6 +29,8 @@ import BeehiveSearchWizard from "./pages/beehive/BeehiveSearchWizzard.jsx";
 import CropManageWizard from "./pages/crop/CropManageWizard.jsx";
 import CropObserveWizard from "./pages/crop/CropObserveWizzard.jsx";
 import ApiaryObserveWizard from "./pages/apiary/ApiaryObserveWizard.jsx";
+import ApiaryManageWizard from "./pages/apiary/ApiaryManageWizzard.jsx";
+import BeehiveManageWizard from "./pages/beehive/BeehiveManageWizard.jsx";
 
 
 
@@ -70,10 +72,12 @@ function App() {
                   <Route path="/apiary/add/*" element={<ApiaryAddWizard />} />
                   <Route path="/apiary/search/*" element={<ApiarySearchWizard />} />
                   <Route path="/apiary/observe/*" element={<ApiaryObserveWizard />} />
+                  <Route path="/apiary/manage/*" element={<ApiaryManageWizard />} />
 
                   <Route path="/beehive" element={<Beehive />} />
                   <Route path="/beehive/add/*" element={<BeehiveAddWizard />} />
                   <Route path="/beehive/search/*" element={<BeehiveSearchWizard />} />
+                  <Route path="/beehive/manage/*" element={<BeehiveManageWizard />} />
               </Route>
 
               {/* Catch-all */}

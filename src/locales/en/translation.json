@@ -15,7 +15,9 @@
     "plot": "Parcels",
     "crops": "Crops",
     "pestControl": "Pests Control",
-    "farm": "Farms"
+    "farm": "Farms",
+    "apiary": "Apiaries",
+    "beehive": "Beehives"
   },
   "home": {
     "login": "Login",
@@ -92,8 +94,17 @@
     "observe": "Observe apiary",
     "select": "Select apiary",
     "label": "Apiary",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "manage": "Manage apiary"
   },
+
+  "beehive": {
+    "select": "Select beehive",
+    "label": "Beehive",
+    "confirm": "Confirm",
+    "manage": "Manage beehive"
+  },
+
   "observation": {
     "selectType": "Select observation type",
     "searchPlaceholder": "Search observation types…",
@@ -114,5 +125,11 @@
     "enterNumber": "Enter a number",
     "enterText": "Enter text",
     "clear": "Clear"
+  },
+  "actions": {
+    "select": "Select action",
+    "enterValue": "Enter value",
+    "type": "Action type",
+    "value": "Value"
   }
 }
