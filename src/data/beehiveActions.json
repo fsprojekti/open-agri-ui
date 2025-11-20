@@ -1,0 +1,42 @@
+[
+  {
+    "value": "FEED_SUGAR",
+    "unit": "g",
+    "description": "Feed sugar to the bees"
+  },
+  {
+    "value": "HARVEST_HONEY",
+    "unit": "g",
+    "description": "Harvest honey from the beehive"
+  },
+  {
+    "value": "EXAMINE_BEGIN",
+    "description": "Begin examining the apiary"
+  },
+  {
+    "value": "EXAMINE_END",
+    "description": "End examining the apiary"
+  },
+  {
+    "value": "QUEEN_INTRODUCTION",
+    "description": "Introduce a new queen bee to the colony"
+  },
+  {
+    "value": "CLEANING",
+    "description": "Clean hive components and remove debris"
+  },
+  {
+    "value": "ADD_HONEYCOMB",
+    "unit": "frames",
+    "description": "Add a new honeycomb frame to the hive"
+  },
+  {
+    "value": "VARROA_TREATMENT",
+    "unit": "ml",
+    "description": "Apply varroa mite treatment"
+  },
+  {
+    "value": "SWARM_MANAGEMENT",
+    "description": "Manage or prevent swarming behaviour"
+  }
+]

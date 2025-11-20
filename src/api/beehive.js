@@ -189,3 +189,34 @@ export async function addBeehive(dataBeehive) {
 
     return res.json();
 }
+
+// src/api/beehive.js (append at end)
+export async function fetchBeehiveObservationTypes() {
+    const token = Cookies.get("jwt");
+    if (!token) throw new Error("Not authenticated");
+
+    // same helper as in crops/apiary
+    const BASE = import.meta.env.DEV
+        ? "/farmcalendar"
+        : (SERVICES.farmcalendar?.baseURL || SERVICES.farmCalendar?.baseURL || SERVICES.gatekeeper.baseURL);
+
+    const url = `${BASE}/v1/FarmCalendarActivityTypes/?category=observation&name=Beehive Observation`;
+    const res = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(`Failed to fetch beehive observation types (${res.status}) ${msg}`);
+    }
+    const data = await res.json();
+    // unwrap the common envelope shapes
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.results)) return data.results;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+}
+

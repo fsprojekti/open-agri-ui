@@ -1,9 +1,36 @@
 [
-  "SOWING",
-  "WATERING",
-  "FERTILIZING",
-  "HARVESTING",
-  "WEEDING_MECHANICAL",
-  "PEST_CONTROL",
-  "PRUNING"
+  {
+    "value": "SOWING",
+    "unit": "kg",
+    "description": "Sow seeds or transplant seedlings"
+  },
+  {
+    "value": "WATERING",
+    "unit": "l",
+    "description": "Irrigate crops"
+  },
+  {
+    "value": "FERTILIZING",
+    "unit": "kg",
+    "description": "Apply fertilizer to crops"
+  },
+  {
+    "value": "HARVESTING",
+    "unit": "kg",
+    "description": "Harvest mature crops"
+  },
+  {
+    "value": "WEEDING_MECHANICAL",
+    "description": "Remove weeds using mechanical methods"
+  },
+  {
+    "value": "PEST_CONTROL",
+    "unit": "ml",
+    "description": "Apply pest control treatments"
+  },
+  {
+    "value": "PRUNING",
+    "unit": "hours",
+    "description": "Prune plants to improve growth and yield"
+  }
 ]

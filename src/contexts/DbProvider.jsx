@@ -11,7 +11,7 @@ import { fetchCrops, fetchCropsObservationTypes } from "../api/crops.js";
 
 // Apiaries & beehives
 import {fetchApiaries, fetchApiaryObservationTypes} from "../api/apiary.js";
-import { fetchBeehives } from "../api/beehive.js";
+import { fetchBeehives, fetchBeehiveObservationTypes } from "../api/beehive.js";
 
 // Canonical crop species list with stable IDs and LATIN name
 import cropSpeciesData from "../data/cropSpecies.json";
@@ -21,6 +21,9 @@ import cropActions from "../data/cropActions.json";
 
 // Static crop observation types list
 import cropObservations from "../data/cropObserveTypes.json";
+import apiaryObservations from "../data/apiaryObserveTypes.json";
+import beehiveObservations from "../data/beehiveObserveTypes.json";
+
 
 const toArray = (data) => {
     if (Array.isArray(data)) return data;
@@ -52,11 +55,13 @@ export default function DbProvider({ children }) {
     const [crops, setCrops] = useState([]);
 
     const [apiaries, setApiaries] = useState([]);
-    const [apiaryObservationTypes, setApiaryObservationTypes] = useState([]);
 
     const [beehives, setBeehives] = useState([]);
 
     const [cropObservationTypes, setCropObservationTypes] = useState([]);
+    const [apiaryObservationTypes, setApiaryObservationTypes] = useState([]);
+    const [beehiveObservationTypes, setBeehiveObservationTypes] = useState([]);
+
 
     /* ----------------------- Crop species (static) ----------------------- */
     const cropSpecies = useMemo(
@@ -139,9 +144,49 @@ export default function DbProvider({ children }) {
 
 
     /* ------------------------------- Apiary observation types (from API) ------------------------------- */
-    // const apiaryObservationTypeOptions = useMemo(() => {
-    //     const tFixed = i18n.getFixedT(lang, "observations");
-    // }
+    const apiaryObservationTypeOptions = useMemo(() => {
+        const tFixed = i18n.getFixedT(lang, "observations");
+        const pretty = (k) => String(k || "")
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .replace(/^\w/, (c) => c.toUpperCase());
+
+        return (apiaryObservationTypes || []).map((item) => {
+            const key = item?.value || item?.key || item?.id || "";
+            const fallback = pretty(key);
+            return {
+                value: String(key),
+                label: tFixed?.(key, { defaultValue: fallback }) ?? fallback,
+                unit: item.unit ?? null,
+                farmCalendarActivityId: item.farmCalendarActivityId,
+            };
+        });
+    }, [apiaryObservationTypes, i18n, lang]);
+
+    const beehiveObservationTypeOptions = useMemo(() => {
+        const tFixed = i18n.getFixedT(lang, "observations");
+        const pretty = (k) => String(k || "")
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .replace(/^\w/, (c) => c.toUpperCase());
+
+        return (beehiveObservationTypes || []).map((item) => {
+            const key = item?.value || item?.key || item?.id || "";
+            const fallback = pretty(key);
+            return {
+                value: String(key),
+                label: tFixed?.(key, { defaultValue: fallback }) ?? fallback,
+                unit: item.unit ?? null,
+                farmCalendarActivityId: item.farmCalendarActivityId,
+            };
+        });
+    }, [beehiveObservationTypes, i18n, lang]);
+
+    const findApiaryObservationTypeByValue = (val) =>
+        (val ? apiaryObservationTypeOptions.find((o) => o.value === val) || null : null);
+
+    const findBeehiveObservationTypeByValue = (val) =>
+        (val ? beehiveObservationTypeOptions.find((o) => o.value === val) || null : null);
 
 
 
@@ -197,7 +242,8 @@ export default function DbProvider({ children }) {
 
             // Map static observation codes -> objects linked to farmCalendarActivityId
             const types = cropObservations.map((obs) => ({
-                value: String(obs),
+                value: typeof obs === "string" ? obs : obs.value,
+                unit: typeof obs === "string" ? null : obs.unit ?? null,
                 farmCalendarActivityId: activityId,
             }));
 
@@ -208,41 +254,56 @@ export default function DbProvider({ children }) {
         }
     }
 
-    async function refreshApiaryObservationTypes(){
+    async function refreshApiaryObservationTypes() {
         try {
             const raw = toArray(await fetchApiaryObservationTypes());
-
-            // Pick the relevant FarmActivityType entry
-            // (tweak this predicate if you have multiple)
-            // Find the specific FarmActivityType for crop growth stage observations
-            const activity =
-                raw.find(
-                    (a) =>
-                        a.category === "observation" &&
-                        a.name === "Apiary Observation"
-                ) || raw[0];
-
+            const activity = raw.find(
+                (a) =>
+                    a.category === "observation" &&
+                    a.name === "Apiary Observation"
+            ) || raw[0];
             if (!activity) {
                 setApiaryObservationTypes([]);
                 return;
             }
-
-            // In your screenshot the field is "@id", not "id"
             const activityId = extractUuid(activity["@id"] || activity.id || "");
-
-            // Map static observation codes -> objects linked to farmCalendarActivityId
-            const types = cropObservations.map((obs) => ({
-                value: String(obs),
+            const types = (Array.isArray(apiaryObservations) ? apiaryObservations : []).map((obs) => ({
+                value: typeof obs === "string" ? obs : obs.value,
+                unit: typeof obs === "string" ? null : obs.unit ?? null,
                 farmCalendarActivityId: activityId,
             }));
-
-            setCropObservationTypes(types);
+            setApiaryObservationTypes(types);
         } catch (error) {
             console.log(error);
-            setCropObservationTypes([]);
+            setApiaryObservationTypes([]);
         }
-
     }
+
+    async function refreshBeehiveObservationTypes() {
+        try {
+            const raw = toArray(await fetchBeehiveObservationTypes());
+            const activity = raw.find(
+                (a) =>
+                    a.category === "observation" &&
+                    a.name === "Beehive Observation"
+            ) || raw[0];
+            if (!activity) {
+                setBeehiveObservationTypes([]);
+                return;
+            }
+            const activityId = extractUuid(activity["@id"] || activity.id || "");
+            const types = (Array.isArray(beehiveObservations) ? beehiveObservations : []).map((obs) => ({
+                value: typeof obs === "string" ? obs : obs.value,
+                unit: typeof obs === "string" ? null : obs.unit ?? null,
+                farmCalendarActivityId: activityId,
+            }));
+            setBeehiveObservationTypes(types);
+        } catch (error) {
+            console.log(error);
+            setBeehiveObservationTypes([]);
+        }
+    }
+
 
     /* ----------------------- Hydrate + initial preloads ---------------------- */
     useEffect(() => {
@@ -256,6 +317,8 @@ export default function DbProvider({ children }) {
             refreshApiaries();
             refreshBeehives();
             refreshCropObservationTypes();
+            refreshApiaryObservationTypes();   // << add
+            refreshBeehiveObservationTypes();
         }
     }, []);
 
@@ -270,6 +333,8 @@ export default function DbProvider({ children }) {
             refreshApiaries();
             refreshBeehives();
             refreshCropObservationTypes();
+            refreshApiaryObservationTypes();   // << add
+            refreshBeehiveObservationTypes();
         };
 
         const onLogout = () => {
@@ -389,6 +454,17 @@ export default function DbProvider({ children }) {
         setBeehives,
         beehiveOptions,
         refreshBeehives,
+
+        // apiary & beehive observation types
+        apiaryObservationTypes,
+        apiaryObservationTypeOptions,
+        refreshApiaryObservationTypes,
+        findApiaryObservationTypeByValue,
+
+        beehiveObservationTypes,
+        beehiveObservationTypeOptions,
+        refreshBeehiveObservationTypes,
+        findBeehiveObservationTypeByValue,
     };
 
     return <DbContext.Provider value={value}>{children}</DbContext.Provider>;

@@ -1,0 +1,30 @@
+[
+  {
+    "value": "EXAMINE_BEGIN",
+    "description": "Begin examining the apiary"
+  },
+  {
+    "value": "EXAMINE_END",
+    "description": "End examining the apiary"
+  },
+  {
+    "value": "ADD_BEEHIVE",
+    "description": "Add a new hive to the apiary"
+  },
+  {
+    "value": "REMOVE_HIVE",
+    "description": "Remove a hive from the apiary"
+  },
+  {
+    "value": "MERGE_COLONIES",
+    "description": "Merge two or more colonies within the apiary"
+  },
+  {
+    "value": "SPLIT_COLONY",
+    "description": "Split a colony into separate hives"
+  },
+  {
+    "value": "QUARANTINE_BEEHIVE",
+    "description": "Mark a hive as quarantined and restrict operations"
+  }
+]

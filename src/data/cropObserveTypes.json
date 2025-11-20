@@ -1,1 +1,26 @@
-["FLOWERING","FRUITING","SICKNESS_DETECTED","PEST_DETECTED","WEED_DETECTED","FLOWERING_REDUCED"]
+[
+  {
+    "value": "FLOWERING",
+    "description": "Plants are in flower"
+  },
+  {
+    "value": "FRUITING",
+    "description": "Plants are fruiting or setting seed"
+  },
+  {
+    "value": "SICKNESS_DETECTED",
+    "description": "Signs of plant disease detected"
+  },
+  {
+    "value": "PEST_DETECTED",
+    "description": "Pests observed affecting crops"
+  },
+  {
+    "value": "WEED_DETECTED",
+    "description": "Weeds observed in the crop"
+  },
+  {
+    "value": "FLOWERING_REDUCED",
+    "description": "Reduced flowering compared to expectations"
+  }
+]
