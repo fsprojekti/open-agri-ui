@@ -1,32 +1,21 @@
 // src/pages/apiary/ApiarySearchWizard.jsx
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import {
-    Alert,
-    Button,
-    Card,
-    Col,
-    Container,
-    Form,
-    Row,
-    Spinner,
-    Table
-} from "react-bootstrap";
-import { useTranslation } from "react-i18next";
+import {Navigate, Route, Routes, useLocation, useNavigate} from "react-router-dom";
+import {Alert, Button, Card, Col, Container, Form, Row, Spinner, Table} from "react-bootstrap";
+import {useTranslation} from "react-i18next";
 
 import useDb from "../../contexts/useDb.js";
-import {
-    fetchApiaryObservations,
-    fetchApiaryActions
-} from "../../api/apiary.js";
+import {fetchApiaryActions, fetchApiaryObservations} from "../../api/apiary.js";
 
-/* ----------------------- small utilities / helpers ----------------------- */
+/* ----------------------------- Wizard store/nav ----------------------------- */
 
+const WizardCtx = React.createContext(null);
 const STORE_KEY = "apiarySearchWizard.v1";
 
 function loadStore() {
     try {
-        return JSON.parse(sessionStorage.getItem(STORE_KEY) || "{}");
+        const raw = sessionStorage.getItem(STORE_KEY);
+        return raw ? JSON.parse(raw) : {};
     } catch {
         return {};
     }
@@ -39,6 +28,48 @@ function saveStore(data) {
         // ignore
     }
 }
+
+function WizardProvider({children}) {
+    const [data, setData] = React.useState(() => loadStore());
+    React.useEffect(() => {
+        saveStore(data);
+    }, [data]);
+
+    const value = React.useMemo(() => ({data, setData}), [data]);
+    return <WizardCtx.Provider value={value}>{children}</WizardCtx.Provider>;
+}
+
+function useApiarySearchNav() {
+    const {data, setData} = React.useContext(WizardCtx);
+    const nav = useNavigate();
+    const {pathname} = useLocation();
+
+    function goNext(path, patch = {}) {
+        setData((d) => {
+            const next = {...d, ...patch};
+            saveStore(next);
+            return next;
+        });
+        nav(path);
+    }
+
+    function goBack(path) {
+        if (path) nav(path);
+        else window.history.back();
+    }
+
+    /** ensure some keys exist; if not, redirect inside wizard */
+    function ensure(requiredKeys = [], redirectPath) {
+        const ok = requiredKeys.every((k) => !!data?.[k]);
+        if (!ok && redirectPath && pathname !== redirectPath) {
+            nav(redirectPath, {replace: true});
+        }
+    }
+
+    return {data, goNext, goBack, ensure, setData};
+}
+
+/* --------------------------------- Helpers --------------------------------- */
 
 function StepHeader({ title, subtitle }) {
     return (
@@ -58,31 +89,181 @@ function formatDateTime(iso) {
     return d.toLocaleString();
 }
 
-/* ------------------------------ main wizard ------------------------------ */
+/* --------------------------------- Steps --------------------------------- */
 
-export default function ApiarySearchWizard() {
+/**
+ * Stage 1: select category (observations/actions)
+ * Route: /apiary/search/category
+ */
+function StepCategory() {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-    const { search } = useLocation();
-    const returnTo = new URLSearchParams(search).get("returnTo") || "/apiary";
+    const {data, goNext, goBack} = useApiarySearchNav();
+    const mode = data.mode || null; // "observations" | "actions" | null
 
-    const { apiaries } = useDb(); // assumes DbContext exposes apiaries list
+    const title = t("apiary.searchTitle") || "Search apiary records";
+    const subtitle =
+        t("apiary.chooseView") || "Step 1 — Choose what you want to view";
 
-    const [state, setState] = React.useState(() => ({
-        apiaryId: "",
-        mode: null, // "actions" | "observations"
-        viewStyle: "table", // "table" | "cards"
-        ...loadStore()
-    }));
+    const chooseMode = (newMode) => {
+        goNext("/apiary/search/apiary", {
+            mode: newMode,
+            apiaryId: "",
+            viewStyle: data.viewStyle || "table"
+        });
+    };
+
+    return (
+        <div className="d-flex flex-column min-vh-100">
+            <StepHeader title={title} subtitle={subtitle}/>
+
+            <Container fluid className="py-3">
+                <Row className="justify-content-center">
+                    <Col xs={12} md={10} lg={8}>
+                        <section className="mb-4">
+                            <Row className="g-3">
+                                <Col xs={12} md={6}>
+                                    <Button
+                                        variant=
+                                            "primary"
+                                        className="w-100 py-4 fs-5 fw-bold shadow-sm"
+                                        onClick={() => chooseMode("observations")}
+                                    >
+                                        {t("apiary.viewObservations") || "View observations"}
+                                    </Button>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                    <Button
+                                        variant="success"
+                                        className="w-100 py-4 fs-5 fw-bold shadow-sm"
+                                        onClick={() => chooseMode("actions")}
+                                    >
+                                        {t("apiary.viewActions") || "View actions"}
+                                    </Button>
+                                </Col>
+                            </Row>
+                        </section>
+
+
+                    </Col>
+                </Row>
+            </Container>
+        </div>
+    );
+}
+
+
+function StepApiary() {
+    const {t} = useTranslation();
+    const {data, goNext, goBack, ensure} = useApiarySearchNav();
+    const {apiaries} = useDb();
+
+    // Ensure we have chosen a mode; otherwise go back to category
+    React.useEffect(() => {
+        ensure(["mode"], "/apiary/search/category");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const title = t("apiary.searchTitle") || "Search apiary records";
+    const subtitle =
+        t("apiary.select") || "Step 2 — Select apiary for the chosen view";
+
+    const [apiaryId, setApiaryId] = React.useState(data.apiaryId || "");
+
+    const apiaryOptions = React.useMemo(() => {
+        if (!apiaries) return [];
+        return apiaries.map((a) => {
+            const id =
+                String(a?.["@id"] || a?.id || "").match(/[0-9a-f-]{36}$/i)?.[0] || "";
+            const label =
+                a?.name || a?.identifier || a?.code || `Apiary ${id.slice(0, 8)}`;
+            return {value: id, label};
+        });
+    }, [apiaries]);
+
+    const onNext = () => {
+        goNext("/apiary/search/results", {
+            apiaryId: apiaryId || "",
+            // keep existing mode & viewStyle
+        });
+    };
+
+    return (
+        <div className="d-flex flex-column min-vh-100">
+            <StepHeader title={title} subtitle={subtitle}/>
+
+            <Container fluid className="py-3">
+                <Row className="justify-content-center">
+                    <Col xs={12} md={10} lg={8}>
+                        <section className="mb-4">
+
+                            <Form.Group controlId="apiarySelect">
+
+                                <Form.Select
+                                    value={apiaryId}
+                                    onChange={(e) => setApiaryId(e.target.value)}
+                                >
+                                    <option value="">
+                                        {t("apiary.selectPlaceholder") || "-- choose apiary --"}
+                                    </option>
+                                    {apiaryOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </section>
+
+                        <div className="d-flex gap-2 mt-4">
+                            <Button
+                                variant="secondary"
+                                className="w-50"
+                                onClick={() => goBack("/apiary/search/category")}
+                            >
+                                {t("button.back") || "Back"}
+                            </Button>
+                            <Button
+                                className="w-50 fw-bold"
+                                onClick={onNext}
+                                disabled={!apiaryId}
+                            >
+                                {t("button.next") || "Next"}
+                            </Button>
+                        </div>
+                    </Col>
+                </Row>
+            </Container>
+        </div>
+    );
+}
+
+/**
+ * Stage 3: show results
+ * Route: /apiary/search/results
+ */
+function StepResults() {
+    const {t} = useTranslation();
+    const {data, goBack, ensure, setData} = useApiarySearchNav();
+    const {apiaries} = useDb();
+
+    // Ensure mode & apiary chosen; otherwise go back
+    React.useEffect(() => {
+        ensure(["mode"], "/apiary/search/category");
+        ensure(["apiaryId"], "/apiary/search/apiary");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const title = t("apiary.searchTitle") || "Search apiary records";
+    const subtitle =
+        data.mode === "actions"
+            ? t("apiary.viewActions") || "Step 3 — Viewing actions"
+            : t("apiary.viewObservations") || "Step 3 — Viewing observations";
 
     const [records, setRecords] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState("");
+    const viewStyle = data.viewStyle || "table";
 
-    const hasMode = Boolean(state.mode);
-    const hasApiary = Boolean(state.apiaryId);
-
-    // derive dropdown options for apiaries
     const apiaryOptions = React.useMemo(() => {
         if (!apiaries) return [];
         return apiaries.map((a) => {
@@ -95,96 +276,49 @@ export default function ApiarySearchWizard() {
     }, [apiaries]);
 
     const selectedApiaryLabel =
-        apiaryOptions.find((o) => o.value === state.apiaryId)?.label || "";
+        apiaryOptions.find((o) => o.value === data.apiaryId)?.label || "";
 
-    /* ---------------------------- step state logic --------------------------- */
-
-    const handleChooseMode = (mode) => {
-        const next = {
-            ...state,
-            mode,
-            apiaryId: "", // reset apiary when changing category
-            viewStyle: "table"
-        };
-        setState(next);
-        saveStore(next);
-        setRecords([]);
-        setError("");
-    };
-
-    const handleSelectApiary = async (apiaryId) => {
-        const next = { ...state, apiaryId };
-        setState(next);
-        saveStore(next);
-        setError("");
-        setRecords([]);
-
-        if (!apiaryId || !next.mode) return;
-
-        setLoading(true);
-        try {
-            const data =
-                next.mode === "actions"
-                    ? await fetchApiaryActions(apiaryId)
-                    : await fetchApiaryObservations(apiaryId);
-            setRecords(data || []);
-        } catch (e) {
-            setError(e?.message || "Failed to load records");
-        } finally {
-            setLoading(false);
+    // Fetch records on mount when mode/apiaryId are available
+    React.useEffect(() => {
+        async function load() {
+            if (!data.mode || !data.apiaryId) return;
+            setLoading(true);
+            setError("");
+            try {
+                const res =
+                    data.mode === "actions"
+                        ? await fetchApiaryActions(data.apiaryId)
+                        : await fetchApiaryObservations(data.apiaryId);
+                setRecords(res || []);
+            } catch (e) {
+                setError(e?.message || "Failed to load records");
+            } finally {
+                setLoading(false);
+            }
         }
+
+        load();
+    }, [data.mode, data.apiaryId]);
+
+    const toggleViewStyle = () => {
+        const nextStyle = viewStyle === "table" ? "cards" : "table";
+        setData((prev) => {
+            const next = {...prev, viewStyle: nextStyle};
+            saveStore(next);
+            return next;
+        });
     };
-
-    const handleToggleViewStyle = () => {
-        const viewStyle = state.viewStyle === "table" ? "cards" : "table";
-        const next = { ...state, viewStyle };
-        setState(next);
-        saveStore(next);
-    };
-
-    const title = t("apiary.searchTitle") || "Search apiary records";
-    const subtitle = !hasMode
-        ? t("apiary.chooseView") || "Choose what to view"
-        : !hasApiary
-            ? t("apiary.select") || "Select apiary"
-            : state.mode === "actions"
-                ? t("apiary.viewActions") || "Viewing actions"
-                : t("apiary.viewObservations") || "Viewing observations";
-
-    /* ----------------------------- render helpers --------------------------- */
-
-    const renderModeButtons = () => (
-        <div className="d-flex flex-column flex-sm-row gap-2 my-3">
-            <Button
-                variant={state.mode === "observations" ? "primary" : "outline-primary"}
-                className="w-100 fw-semibold"
-                disabled={loading}
-                onClick={() => handleChooseMode("observations")}
-            >
-                {t("apiary.viewObservations") || "View observations"}
-            </Button>
-            <Button
-                variant={state.mode === "actions" ? "primary" : "outline-primary"}
-                className="w-100 fw-semibold"
-                disabled={loading}
-                onClick={() => handleChooseMode("actions")}
-            >
-                {t("apiary.viewActions") || "View actions"}
-            </Button>
-        </div>
-    );
 
     const renderViewSwitch = () => {
-        if (!hasMode || !hasApiary) return null;
         return (
             <div className="d-flex justify-content-center my-2">
                 <Form.Check
                     type="switch"
                     id="apiary-view-style-switch"
-                    checked={state.viewStyle === "cards"}
-                    onChange={handleToggleViewStyle}
+                    checked={viewStyle === "cards"}
+                    onChange={toggleViewStyle}
                     label={
-                        state.viewStyle === "cards"
+                        viewStyle === "cards"
                             ? t("records.cardView") || "Card view"
                             : t("records.tableView") || "Table view"
                     }
@@ -206,7 +340,7 @@ export default function ApiarySearchWizard() {
 
         return (
             <div className="table-responsive">
-                <Table striped hovered size="sm" className="align-middle mb-0">
+                <Table striped hover size="sm" className="align-middle mb-0">
                     <thead>
                     <tr>
                         <th>{t("records.date") || "Date & time"}</th>
@@ -295,7 +429,20 @@ export default function ApiarySearchWizard() {
         );
     };
 
-    /* --------------------------------- render -------------------------------- */
+    const clearAll = () => {
+        setData(() => {
+            const cleared = {
+                mode: null,
+                apiaryId: "",
+                viewStyle: "table"
+            };
+            saveStore(cleared);
+            return cleared;
+        });
+        setRecords([]);
+        setError("");
+        goBack("/apiary/search/category");
+    };
 
     return (
         <div className="d-flex flex-column min-vh-100">
@@ -304,51 +451,16 @@ export default function ApiarySearchWizard() {
             <Container fluid className="py-3">
                 <Row className="justify-content-center">
                     <Col xs={12} md={10} lg={8}>
-                        {/* STEP 1: choose category (observations/actions) */}
-                        {renderModeButtons()}
 
-                        {/* STEP 2: select apiary – only meaningful after mode is chosen */}
-                        <Form.Group className="mb-3" controlId="apiarySelect">
-                            <Form.Label>{t("apiary.select") || "Select apiary"}</Form.Label>
-                            <Form.Select
-                                value={state.apiaryId}
-                                onChange={(e) => handleSelectApiary(e.target.value)}
-                                disabled={!hasMode || loading}
-                            >
-                                <option value="">
-                                    {!hasMode
-                                        ? t("apiary.selectDisabled") ||
-                                        "First choose what you want to view"
-                                        : t("apiary.selectPlaceholder") || "-- choose apiary --"}
-                                </option>
-                                {apiaryOptions.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                            {!hasMode && (
-                                <Form.Text className="text-muted">
-                                    {t("apiary.hintChooseModeFirst") ||
-                                        "First pick whether you want to see observations or actions."}
-                                </Form.Text>
-                            )}
-                        </Form.Group>
 
-                        {/* Info about selection */}
-                        {hasMode && hasApiary && (
-                            <div className="small text-muted mb-2">
-                                {t("apiary.selected") || "Selected apiary"}:{" "}
-                                <span className="fw-semibold">{selectedApiaryLabel}</span>
-                            </div>
-                        )}
+                        {renderViewSwitch()}
 
-                        {/* Error & loading */}
                         {error && (
-                            <Alert variant="danger" className="py-2">
+                            <Alert variant="danger" className="py-2 mt-2">
                                 {error}
                             </Alert>
                         )}
+
                         {loading && (
                             <div className="d-flex justify-content-center my-3">
                                 <Spinner animation="border" size="sm" className="me-2" />
@@ -356,37 +468,24 @@ export default function ApiarySearchWizard() {
                             </div>
                         )}
 
-                        {/* View switch + data */}
-                        {renderViewSwitch()}
-                        {!loading && hasMode && hasApiary && (
+                        {!loading && (
                             <div className="mt-3">
-                                {state.viewStyle === "table" ? renderTable() : renderCards()}
+                                {viewStyle === "table" ? renderTable() : renderCards()}
                             </div>
                         )}
 
-                        {/* Bottom buttons */}
                         <div className="d-flex gap-2 mt-4">
                             <Button
                                 variant="secondary"
                                 className="w-50"
-                                onClick={() => navigate(returnTo)}
+                                onClick={() => goBack("/apiary/search/apiary")}
                             >
                                 {t("button.back") || "Back"}
                             </Button>
                             <Button
                                 variant="outline-secondary"
                                 className="w-50"
-                                onClick={() => {
-                                    const cleared = {
-                                        apiaryId: "",
-                                        mode: null,
-                                        viewStyle: "table"
-                                    };
-                                    setState(cleared);
-                                    saveStore(cleared);
-                                    setRecords([]);
-                                    setError("");
-                                }}
+                                onClick={clearAll}
                             >
                                 {t("records.clear") || "Clear selection"}
                             </Button>
@@ -395,5 +494,21 @@ export default function ApiarySearchWizard() {
                 </Row>
             </Container>
         </div>
+    );
+}
+
+/* --------------------------------- Router --------------------------------- */
+
+export default function ApiarySearchWizardRouter() {
+    return (
+        <WizardProvider>
+            <Routes>
+                <Route index element={<Navigate to="category" replace/>}/>
+                <Route path="category" element={<StepCategory/>}/>
+                <Route path="apiary" element={<StepApiary/>}/>
+                <Route path="results" element={<StepResults/>}/>
+                <Route path="*" element={<Navigate to="category" replace/>}/>
+            </Routes>
+        </WizardProvider>
     );
 }

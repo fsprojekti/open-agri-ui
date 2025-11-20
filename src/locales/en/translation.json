@@ -95,7 +95,12 @@
     "select": "Select apiary",
     "label": "Apiary",
     "confirm": "Confirm",
-    "manage": "Manage apiary"
+    "manage": "Manage apiary",
+    "searchTitle": "View apiaries data",
+    "chooseView": "Choose what data to show",
+    "viewObservations": "Show observations",
+    "viewActions": "Show actions",
+    "selectPlaceholder": "Select an apiary from the list…"
   },
 
   "beehive": {
